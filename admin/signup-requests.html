@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Signup Requests — Admin</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<div class="bg-scene" aria-hidden="true">
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <div class="bg-grid"></div>
+</div>
+
+<nav class="navbar">
+  <a href="submissions.html" class="nav-logo">
+    <div class="nav-logo-icon">BX</div>
+    <span>Admin Portal</span>
+  </a>
+  <div class="nav-links">
+    <a href="submissions.html" class="nav-link">Submissions</a>
+    <a href="signup-requests.html" class="nav-link active">Signup Requests</a>
+  </div>
+  <div class="nav-right">
+    <span id="admin-user" class="text-sm text-muted" style="margin-right:8px;"></span>
+    <button class="btn btn-ghost btn-sm" id="logout-btn">Sign Out</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="container" style="padding-top:40px;padding-bottom:60px;">
+
+    <div class="flex items-center justify-between mb-24 fade-up" style="flex-wrap:wrap;gap:16px;">
+      <div>
+        <div class="badge badge-indigo mb-8">Admin</div>
+        <h2>Signup Requests</h2>
+        <p class="text-muted text-sm mt-4" id="result-count">Loading…</p>
+      </div>
+    </div>
+
+    <div class="card mb-20 fade-up delay-1">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;align-items:end;">
+        <div class="form-group">
+          <label class="form-label">Participant ID</label>
+          <input class="form-input" id="f-participant" placeholder="P-2024-…">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select" id="f-status">
+            <option value="">All statuses</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="clear-filters-btn">Clear filters</button>
+      </div>
+    </div>
+
+    <div class="card mb-20 fade-up delay-2">
+      <h4 class="mb-16">Create Invite</h4>
+      <div id="invite-msg" class="alert alert-info mb-12" style="display:none;padding:8px 12px;font-size:12px;"></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;align-items:end;">
+        <div class="form-group">
+          <label class="form-label">Invite Code</label>
+          <input class="form-input" id="invite-code" placeholder="e.g. RCT-INVITE-001">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Label</label>
+          <input class="form-input" id="invite-label" placeholder="Batch / campaign name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Max Uses</label>
+          <input class="form-input" id="invite-max-uses" type="number" min="1" value="10">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Default Group</label>
+          <select class="form-select" id="invite-group">
+            <option value="">None</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Default Route</label>
+          <select class="form-select" id="invite-route">
+            <option value="">None</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Default Slot</label>
+          <select class="form-select" id="invite-slot">
+            <option value="">None</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+        </div>
+        <button class="btn btn-primary btn-sm" id="create-invite-btn">Create Invite</button>
+      </div>
+    </div>
+
+    <div class="card fade-up delay-3" style="padding:0;overflow:hidden;">
+      <div id="action-msg" class="alert alert-error mb-16" style="display:none;padding:10px 14px;font-size:13px;"></div>
+
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border);background:var(--surface2);">
+              <th style="padding:12px 16px;text-align:left;font-size:12px;color:var(--text-dim);text-transform:uppercase;">Participant</th>
+              <th style="padding:12px 16px;text-align:left;font-size:12px;color:var(--text-dim);text-transform:uppercase;">Name</th>
+              <th style="padding:12px 16px;text-align:left;font-size:12px;color:var(--text-dim);text-transform:uppercase;">Invite</th>
+              <th style="padding:12px 16px;text-align:left;font-size:12px;color:var(--text-dim);text-transform:uppercase;">Requested Assignment</th>
+              <th style="padding:12px 16px;text-align:left;font-size:12px;color:var(--text-dim);text-transform:uppercase;">Status</th>
+              <th style="padding:12px 16px;text-align:left;font-size:12px;color:var(--text-dim);text-transform:uppercase;">Created</th>
+              <th style="padding:12px 16px;text-align:left;font-size:12px;color:var(--text-dim);text-transform:uppercase;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="requests-body">
+            <tr><td colspan="7" style="padding:40px;text-align:center;color:var(--text-dim);">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="pagination" class="flex items-center justify-between mt-16" style="flex-wrap:wrap;gap:12px;display:none;">
+      <span id="page-info" class="text-sm text-muted"></span>
+      <div class="flex gap-8">
+        <button id="btn-prev" class="btn btn-ghost btn-sm">← Previous</button>
+        <button id="btn-next" class="btn btn-ghost btn-sm">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var currentPage = 1;
+var totalPages = 1;
+var debounceTimer;
+
+var STATUS_BADGE = {
+  pending: 'badge-amber',
+  approved: 'badge-emerald',
+  rejected: 'badge-rose'
+};
+
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function showActionMsg(msg, isError) {
+  var box = document.getElementById('action-msg');
+  box.className = 'alert ' + (isError ? 'alert-error' : 'alert-success') + ' mb-16';
+  box.textContent = msg;
+  box.style.display = msg ? '' : 'none';
+}
+
+function showInviteMsg(msg, isError) {
+  var box = document.getElementById('invite-msg');
+  box.className = 'alert ' + (isError ? 'alert-error' : 'alert-success') + ' mb-12';
+  box.textContent = msg;
+  box.style.display = msg ? '' : 'none';
+}
+
+function logout() {
+  fetch('/admin/logout', { method: 'POST', credentials: 'include' }).then(function () {
+    window.location.href = '/admin/login.html';
+  });
+}
+
+function debounceLoad() {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(function() {
+    currentPage = 1;
+    loadRequests();
+  }, 300);
+}
+
+function clearFilters() {
+  document.getElementById('f-participant').value = '';
+  document.getElementById('f-status').value = '';
+  currentPage = 1;
+  loadRequests();
+}
+
+function changePage(delta) {
+  var next = currentPage + delta;
+  if (next < 1 || next > totalPages) return;
+  currentPage = next;
+  loadRequests();
+}
+
+function buildQuery() {
+  var params = new URLSearchParams({ page: currentPage, limit: 20 });
+  var p = document.getElementById('f-participant').value.trim();
+  var s = document.getElementById('f-status').value;
+  if (p) params.set('participant', p);
+  if (s) params.set('status', s);
+  return params.toString();
+}
+
+function assignText(r) {
+  var g = r.requested_group_code || '—';
+  var route = r.requested_route || '—';
+  var slot = r.requested_timeslot || '—';
+  return 'G:' + g + ' R:' + route + ' S:' + slot;
+}
+
+function setActionButtonsDisabled(id, disabled) {
+  document.querySelectorAll('[data-request-id="' + id + '"]').forEach(function(btn) {
+    btn.disabled = disabled;
+  });
+}
+
+function approveRequest(id) {
+  showActionMsg('', false);
+  setActionButtonsDisabled(id, true);
+
+  fetch('/admin/api/signup-requests/' + id, {
+    method: 'PATCH',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'approve' })
+  })
+    .then(function(r) {
+      if (r.status === 401) {
+        window.location.href = '/admin/login.html';
+        return null;
+      }
+      return r.json().catch(function(){ return {}; }).then(function(d) {
+        if (!r.ok) throw new Error(d.error || 'Approve failed');
+        return d;
+      });
+    })
+    .then(function(data) {
+      if (!data) return;
+      showActionMsg('Request approved successfully.', false);
+      loadRequests();
+    })
+    .catch(function(err) {
+      showActionMsg(err.message || 'Approve failed', true);
+      setActionButtonsDisabled(id, false);
+    });
+}
+
+function rejectRequest(id) {
+  var reason = window.prompt('Optional rejection reason:');
+  if (reason === null) return;
+
+  showActionMsg('', false);
+  setActionButtonsDisabled(id, true);
+
+  fetch('/admin/api/signup-requests/' + id, {
+    method: 'PATCH',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'reject', rejection_reason: reason })
+  })
+    .then(function(r) {
+      if (r.status === 401) {
+        window.location.href = '/admin/login.html';
+        return null;
+      }
+      return r.json().catch(function(){ return {}; }).then(function(d) {
+        if (!r.ok) throw new Error(d.error || 'Reject failed');
+        return d;
+      });
+    })
+    .then(function(data) {
+      if (!data) return;
+      showActionMsg('Request rejected successfully.', false);
+      loadRequests();
+    })
+    .catch(function(err) {
+      showActionMsg(err.message || 'Reject failed', true);
+      setActionButtonsDisabled(id, false);
+    });
+}
+
+function renderRequests(data) {
+  var pg = data.pagination;
+  currentPage = pg.page;
+  totalPages = pg.pages;
+
+  document.getElementById('result-count').textContent = pg.total + ' request' + (pg.total !== 1 ? 's' : '') + ' found';
+
+  var tbody = document.getElementById('requests-body');
+  if (!data.requests.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="padding:40px;text-align:center;color:var(--text-dim);">No signup requests found.</td></tr>';
+  } else {
+    tbody.innerHTML = data.requests.map(function(r) {
+      var badgeClass = STATUS_BADGE[r.status] || 'badge-indigo';
+      var actionHtml = r.status === 'pending'
+        ? '<div class="flex gap-8">' +
+          '<button class="btn btn-emerald btn-xs" data-request-id="' + r.id + '">Approve</button>' +
+          '<button class="btn btn-danger btn-xs" data-request-id="' + r.id + '">Reject</button>' +
+          '</div>'
+        : '<span class="text-xs text-dim">—</span>';
+
+      return '<tr style="border-bottom:1px solid var(--border);">' +
+        '<td style="padding:12px 16px;"><code style="color:var(--indigo-l);font-size:12px;">' + escHtml(r.participant_code) + '</code></td>' +
+        '<td style="padding:12px 16px;font-size:13px;">' + escHtml(r.name || '—') + '</td>' +
+        '<td style="padding:12px 16px;font-size:13px;">' + escHtml(r.invite_label || '—') + '</td>' +
+        '<td style="padding:12px 16px;font-size:12px;color:var(--text-muted);">' + escHtml(assignText(r)) + '</td>' +
+        '<td style="padding:12px 16px;"><span class="badge ' + badgeClass + '">' + escHtml(r.status) + '</span></td>' +
+        '<td style="padding:12px 16px;font-size:12px;color:var(--text-dim);">' + escHtml((r.created_at || '').replace('T',' ').slice(0,16)) + '</td>' +
+        '<td style="padding:12px 16px;">' + actionHtml + '</td>' +
+      '</tr>';
+    }).join('');
+
+    data.requests.forEach(function(r) {
+      if (r.status !== 'pending') return;
+      var buttons = document.querySelectorAll('[data-request-id="' + r.id + '"]');
+      if (buttons[0]) buttons[0].addEventListener('click', function () { approveRequest(r.id); });
+      if (buttons[1]) buttons[1].addEventListener('click', function () { rejectRequest(r.id); });
+    });
+  }
+
+  var pag = document.getElementById('pagination');
+  if (pg.pages > 1) {
+    pag.style.display = '';
+    document.getElementById('page-info').textContent = 'Page ' + pg.page + ' of ' + pg.pages;
+    document.getElementById('btn-prev').disabled = pg.page <= 1;
+    document.getElementById('btn-next').disabled = pg.page >= pg.pages;
+  } else {
+    pag.style.display = 'none';
+  }
+}
+
+function loadRequests() {
+  fetch('/admin/api/signup-requests?' + buildQuery(), { credentials: 'include' })
+    .then(function(r) {
+      if (r.status === 401) {
+        window.location.href = '/admin/login.html';
+        return null;
+      }
+      return r.json();
+    })
+    .then(function(data) {
+      if (!data) return;
+      renderRequests(data);
+    })
+    .catch(function(err) {
+      document.getElementById('requests-body').innerHTML =
+        '<tr><td colspan="7" style="padding:40px;text-align:center;color:var(--rose);">' + escHtml(err.message || 'Failed to load signup requests.') + '</td></tr>';
+    });
+}
+
+function createInvite() {
+  var inviteCode = document.getElementById('invite-code').value.trim();
+  var label = document.getElementById('invite-label').value.trim();
+  var maxUses = parseInt(document.getElementById('invite-max-uses').value, 10) || 1;
+  var group = document.getElementById('invite-group').value;
+  var route = document.getElementById('invite-route').value;
+  var slot = document.getElementById('invite-slot').value;
+
+  if (!inviteCode || inviteCode.length < 8) {
+    return showInviteMsg('Invite code must be at least 8 characters.', true);
+  }
+
+  var payload = {
+    invite_code: inviteCode,
+    label: label || null,
+    max_uses: maxUses,
+    default_group_code: group || null,
+    default_route: route ? parseInt(route, 10) : null,
+    default_timeslot: slot ? parseInt(slot, 10) : null
+  };
+
+  fetch('/admin/api/invites', {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+    .then(function(r) {
+      if (r.status === 401) {
+        window.location.href = '/admin/login.html';
+        return null;
+      }
+      return r.json().catch(function(){ return {}; }).then(function(d) {
+        if (!r.ok) throw new Error(d.error || 'Failed to create invite');
+        return d;
+      });
+    })
+    .then(function(data) {
+      if (!data) return;
+      showInviteMsg('Invite created successfully.', false);
+      document.getElementById('invite-code').value = '';
+      document.getElementById('invite-label').value = '';
+      document.getElementById('invite-max-uses').value = '10';
+      document.getElementById('invite-group').value = '';
+      document.getElementById('invite-route').value = '';
+      document.getElementById('invite-slot').value = '';
+    })
+    .catch(function(err) {
+      showInviteMsg(err.message || 'Failed to create invite.', true);
+    });
+}
+
+(function init() {
+  document.getElementById('logout-btn').addEventListener('click', logout);
+  document.getElementById('f-participant').addEventListener('input', debounceLoad);
+  document.getElementById('f-status').addEventListener('change', loadRequests);
+  document.getElementById('clear-filters-btn').addEventListener('click', clearFilters);
+  document.getElementById('btn-prev').addEventListener('click', function () { changePage(-1); });
+  document.getElementById('btn-next').addEventListener('click', function () { changePage(1); });
+  document.getElementById('create-invite-btn').addEventListener('click', createInvite);
+
+  fetch('/admin/api/me', { credentials: 'include' })
+    .then(function(r) {
+      if (!r.ok) throw new Error('unauthorized');
+      return r.json();
+    })
+    .then(function(me) {
+      document.getElementById('admin-user').textContent = me.username;
+      loadRequests();
+    })
+    .catch(function() {
+      window.location.href = '/admin/login.html';
+    });
+})();
+</script>
+</body>
+</html>

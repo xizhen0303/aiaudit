@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Upload — RCT Research</title>
+<link rel="stylesheet" href="style.css">
+<script src="components/auth.js"></script>
+</head>
+<body>
+
+<div class="bg-scene" aria-hidden="true">
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <div class="bg-orb bg-orb-3"></div>
+  <div class="bg-grid"></div>
+</div>
+
+<div id="navbar-placeholder"></div>
+
+<div class="page">
+  <div class="container-sm" style="padding-top:40px;padding-bottom:60px;">
+
+    <!-- Upload form panel -->
+    <div id="upload-panel">
+
+      <div class="section-header fade-up">
+        <div class="badge badge-cyan">File Upload</div>
+        <h2>Submit Ride Evidence</h2>
+        <p>Upload your trip screenshots and screen recording. All fields are required.</p>
+      </div>
+
+      <!-- Participant identity banner — populated by RCT.init() -->
+      <div id="participant-banner" class="alert alert-info mb-16 fade-up"
+           style="display:none;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <div class="flex items-center gap-12">
+          <span style="font-size:18px;">👤</span>
+          <div>
+            <span id="banner-name" style="font-weight:600;"></span>
+            <span class="text-xs text-dim" style="margin-left:8px;" id="banner-code"></span>
+          </div>
+        </div>
+        <div class="flex gap-8 flex-wrap" style="font-size:12px;">
+          <span>Group <strong id="banner-group"></strong></span>
+          <span>·</span>
+          <span>Route <strong id="banner-route"></strong></span>
+          <span>·</span>
+          <span>Slot <strong id="banner-slot"></strong></span>
+        </div>
+      </div>
+
+      <!-- Naming reminder -->
+      <div class="alert alert-info mb-24 fade-up delay-1">
+        <span class="alert-icon">📝</span>
+        <div>
+          <strong>File naming format:</strong>
+          <code style="margin-left:8px;background:rgba(6,182,212,.1);padding:2px 8px;border-radius:4px;font-size:12px;">
+            [Group]_[ParticipantID]_[StepNumber]_[YYYYMMDD].[ext]
+          </code>
+          <div class="text-xs mt-4" style="opacity:.8">Example: <code>A_P042_Step03_20240315.png</code></div>
+        </div>
+      </div>
+
+      <!-- Dropzone -->
+      <div class="dropzone fade-up delay-2" id="dropzone"
+           onclick="document.getElementById('file-input').click()"
+           ondragover="handleDragOver(event)"
+           ondragleave="handleDragLeave(event)"
+           ondrop="handleDrop(event)">
+        <input type="file" id="file-input" multiple accept=".png,.jpg,.jpeg,.mp4"
+               style="display:none" onchange="addFiles(this.files)">
+        <div style="font-size:36px;margin-bottom:12px;">☁️</div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:6px;">Drag &amp; drop files here</div>
+        <div class="text-muted text-sm">or click to browse</div>
+        <div class="flex justify-center gap-8 mt-16" style="flex-wrap:wrap;">
+          <span class="badge badge-indigo">PNG</span>
+          <span class="badge badge-indigo">JPG</span>
+          <span class="badge badge-cyan">MP4</span>
+        </div>
+      </div>
+
+      <!-- File list -->
+      <div id="file-list" class="flex flex-col gap-8 mt-16"></div>
+
+      <!-- Metadata form -->
+      <div class="card mt-24 fade-up delay-3">
+        <h4 class="mb-20">Trip Metadata</h4>
+
+        <div class="form-row mb-16">
+          <div class="form-group">
+            <label class="form-label">
+              Group *
+              <span class="badge badge-indigo" style="margin-left:6px;vertical-align:middle;font-size:9px;">Auto-filled</span>
+            </label>
+            <select class="form-select" id="f-group" style="opacity:.75;cursor:not-allowed;">
+              <option value="">Select group…</option>
+              <option value="A">Group A</option>
+              <option value="B">Group B</option>
+              <option value="C">Group C</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">
+              Participant ID *
+              <span class="badge badge-indigo" style="margin-left:6px;vertical-align:middle;font-size:9px;">Auto-filled</span>
+            </label>
+            <input class="form-input" id="f-pid" placeholder="Loading…"
+                   style="opacity:.75;cursor:not-allowed;" readonly>
+          </div>
+        </div>
+
+        <div class="form-row mb-16">
+          <div class="form-group">
+            <label class="form-label">Trip Date *</label>
+            <input class="form-input" id="f-date" type="date">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Trip End Time (HH:MM) *</label>
+            <input class="form-input" id="f-endtime" type="time" placeholder="14:35">
+          </div>
+        </div>
+
+        <div class="form-row mb-16">
+          <div class="form-group">
+            <label class="form-label">Starting Point *</label>
+            <input class="form-input" id="f-start" placeholder="e.g. PolyU Main Entrance">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Destination *</label>
+            <input class="form-input" id="f-dest" placeholder="e.g. Central MTR Station">
+          </div>
+        </div>
+
+        <div class="form-row mb-16">
+          <div class="form-group">
+            <label class="form-label">
+              Timeslot *
+              <span class="badge badge-indigo" style="margin-left:6px;vertical-align:middle;font-size:9px;">Auto-filled</span>
+            </label>
+            <select class="form-select" id="f-slot" style="opacity:.75;cursor:not-allowed;">
+              <option value="">Select timeslot…</option>
+              <option value="1">Slot 1 — 08:00–10:00 AM</option>
+              <option value="2">Slot 2 — 10:00 AM–12:00 PM</option>
+              <option value="3">Slot 3 — 12:00–02:00 PM</option>
+              <option value="4">Slot 4 — 02:00–04:00 PM</option>
+              <option value="5">Slot 5 — 04:00–06:00 PM</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">
+              Route *
+              <span class="badge badge-indigo" style="margin-left:6px;vertical-align:middle;font-size:9px;">Auto-filled</span>
+            </label>
+            <select class="form-select" id="f-route" style="opacity:.75;cursor:not-allowed;">
+              <option value="">Select route…</option>
+              <option value="1">Route 1 — Northern District</option>
+              <option value="2">Route 2 — Eastern Corridor</option>
+              <option value="3">Route 3 — City Centre Loop</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Device Model — NEW -->
+        <div class="form-group mb-16">
+          <label class="form-label">Device Model *</label>
+          <div class="flex gap-8 flex-wrap mb-8" id="os-options">
+            <label class="os-chip" data-os="iOS">
+              <input type="radio" name="os" value="iOS" style="display:none" onchange="selectOS('iOS')">
+              <span>🍎 iOS</span>
+            </label>
+            <label class="os-chip" data-os="Android">
+              <input type="radio" name="os" value="Android" style="display:none" onchange="selectOS('Android')">
+              <span>🤖 Android</span>
+            </label>
+            <label class="os-chip" data-os="Harmony">
+              <input type="radio" name="os" value="Harmony" style="display:none" onchange="selectOS('Harmony')">
+              <span>🌸 Harmony</span>
+            </label>
+            <label class="os-chip" data-os="Other">
+              <input type="radio" name="os" value="Other" style="display:none" onchange="selectOS('Other')">
+              <span>⚙️ Others</span>
+            </label>
+          </div>
+          <input class="form-input" id="f-device-other" placeholder="Specify device model…"
+                 style="display:none">
+          <input type="hidden" id="f-device" value="">
+        </div>
+
+        <div class="form-group mb-16">
+          <label class="form-label">Step Number (optional)</label>
+          <input class="form-input" id="f-step" placeholder="e.g. Step03 — if uploading a specific step only">
+        </div>
+
+        <div class="form-group mb-0">
+          <label class="form-label">Notes (missed steps, issues, anomalies)</label>
+          <textarea class="form-textarea" id="f-notes" placeholder="Describe any deviations from the protocol, anomalies observed, or missing screenshots…"></textarea>
+        </div>
+      </div>
+
+      <!-- Privacy notice -->
+      <div class="alert-privacy mt-16 fade-up delay-4">
+        <div class="flex items-center gap-8 mb-8" style="font-weight:600;font-size:13px;color:var(--indigo-l)">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Privacy &amp; Data Notice
+        </div>
+        <p>All uploaded files are for <strong>research purposes only</strong>.
+        No personal information should be included in your screenshots or recordings.
+        Files are stored on access-controlled research servers and will be deleted
+        within 12 months of study completion in accordance with the
+        PolyU Research Ethics Policy.</p>
+      </div>
+
+      <!-- Upload progress (visible only during active upload) -->
+      <div id="upload-progress-wrap" class="mt-12" style="display:none;">
+        <div class="flex items-center justify-between mb-6">
+          <span class="text-xs text-muted">Uploading files…</span>
+          <span id="upload-progress-pct" class="text-xs" style="color:var(--indigo-l);font-weight:600;">0%</span>
+        </div>
+        <div class="progress">
+          <div class="progress-bar" id="upload-progress-bar" style="width:0%;transition:width .2s linear;"></div>
+        </div>
+      </div>
+
+      <!-- Submit button -->
+      <button class="btn btn-primary w-full mt-16 btn-lg fade-up delay-5"
+              id="submit-btn" onclick="submitFiles()" disabled>
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+        Submit Evidence Package
+      </button>
+      <div class="text-center text-xs text-dim mt-8" id="submit-hint">
+        Add files and complete all required fields to enable submission.
+      </div>
+
+    </div><!-- #upload-panel -->
+
+    <!-- ── Success screen (hidden by default) ── -->
+    <div id="success-panel" style="display:none;text-align:center;padding:60px 0;" class="fade-up">
+      <div class="success-icon">
+        <svg width="36" height="36" fill="none" stroke="#10b981" stroke-width="2.5" viewBox="0 0 24 24">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <h2>Submission Complete</h2>
+      <p class="text-muted mt-12">Your evidence package has been securely uploaded and queued for review.</p>
+      <div class="card mt-24 mb-24" style="display:inline-block;text-align:left;min-width:300px;max-width:480px;">
+        <div class="text-xs text-dim mb-8">Reference Number</div>
+        <div id="ref-num" class="mono" style="font-size:18px;font-weight:700;color:var(--indigo-l);margin-bottom:20px;"></div>
+        <div id="submission-summary" class="flex flex-col gap-8"></div>
+      </div>
+      <div class="flex justify-center gap-12">
+        <button class="btn btn-ghost" onclick="resetForm()">Upload More Files</button>
+        <a href="dashboard.html" class="btn btn-primary">Go to Dashboard →</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+.os-chip{
+  display:inline-flex;align-items:center;
+  padding:7px 14px;border-radius:8px;font-size:13px;font-weight:500;
+  background:var(--surface2);border:1px solid var(--border2);
+  color:var(--text-muted);cursor:pointer;transition:all .15s;
+  user-select:none;
+}
+.os-chip:hover{border-color:var(--indigo);color:var(--text)}
+.os-chip.selected{background:rgba(99,102,241,.15);border-color:var(--indigo);color:var(--indigo-l)}
+</style>
+
+<script src="components/navbar.js"></script>
+<script>
+var files     = [];
+var uploading = false;
+
+/* ── OS chip selection ──────────────────────────────────── */
+function selectOS(os) {
+  document.querySelectorAll('.os-chip').forEach(function(c){
+    c.classList.toggle('selected', c.dataset.os === os);
+  });
+  document.getElementById('f-device').value = os;
+  document.getElementById('f-device-other').style.display = os === 'Other' ? '' : 'none';
+  checkSubmit();
+}
+
+/* ── Drag & Drop ────────────────────────────────────────── */
+function handleDragOver(e) {
+  e.preventDefault();
+  document.getElementById('dropzone').classList.add('drag-over');
+}
+function handleDragLeave() {
+  document.getElementById('dropzone').classList.remove('drag-over');
+}
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropzone').classList.remove('drag-over');
+  addFiles(e.dataTransfer.files);
+}
+
+/* ── Stage files (no fake upload — upload happens on submit) */
+function addFiles(fileList) {
+  var ALLOWED = ['image/png','image/jpeg','video/mp4'];
+  Array.from(fileList).forEach(function(f) {
+    // Client-side type check before staging
+    if (!ALLOWED.includes(f.type)) {
+      alert('File "' + f.name + '" is not allowed.\nAccepted types: PNG, JPG, MP4.');
+      return;
+    }
+    files.push({ id: Date.now() + Math.random(), file: f });
+  });
+  renderFiles();
+  checkSubmit();
+}
+
+/* ── Render staged file list ────────────────────────────── */
+function renderFiles() {
+  var el = document.getElementById('file-list');
+  if (files.length === 0) { el.innerHTML = ''; return; }
+  el.innerHTML = files.map(function(f) {
+    var isVideo  = f.file.type.startsWith('video');
+    var icon     = isVideo ? '🎬' : '🖼️';
+    var sizeMB   = (f.file.size / 1048576).toFixed(1);
+    return '<div class="file-item">' +
+      '<div class="file-icon">' + icon + '</div>' +
+      '<div class="file-info">' +
+        '<div class="file-name">' + escHtml(f.file.name) + '</div>' +
+        '<div class="file-size">' + sizeMB + ' MB &nbsp;·&nbsp; ' +
+          '<span style="color:var(--emerald)">Staged — ready to submit</span>' +
+        '</div>' +
+      '</div>' +
+      (uploading
+        ? '<svg width="16" height="16" fill="none" stroke="var(--text-dim)" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>'
+        : '<button class="btn btn-danger btn-xs" onclick="removeFile(' + f.id + ')">✕</button>') +
+    '</div>';
+  }).join('');
+}
+
+function removeFile(id) {
+  files = files.filter(function(f){ return f.id !== id; });
+  renderFiles();
+  checkSubmit();
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ── Enable/disable submit based on files + form fields ─── */
+function checkSubmit() {
+  if (uploading) return;
+  var hasFiles = files.length > 0;
+  var hasDate  = !!document.getElementById('f-date').value;
+  var hasTime  = !!document.getElementById('f-endtime').value;
+  var hasStart = !!document.getElementById('f-start').value.trim();
+  var hasDest  = !!document.getElementById('f-dest').value.trim();
+  var device   = document.getElementById('f-device').value;
+  var hasDevice= !!device && (device !== 'Other' || !!document.getElementById('f-device-other').value.trim());
+  var ready    = hasFiles && hasDate && hasTime && hasStart && hasDest && hasDevice;
+  document.getElementById('submit-btn').disabled = !ready;
+  document.getElementById('submit-hint').textContent = !hasFiles
+    ? 'Add at least one file to begin.'
+    : !ready
+      ? 'Complete all required fields below.'
+      : 'Ready to submit — click the button above.';
+}
+
+/* ── Real upload ─────────────────────────────────────────── */
+function submitFiles() {
+  if (uploading || files.length === 0) return;
+
+  // Final validation
+  var date    = document.getElementById('f-date').value;
+  var endtime = document.getElementById('f-endtime').value;
+  var start   = document.getElementById('f-start').value.trim();
+  var dest    = document.getElementById('f-dest').value.trim();
+  var device  = document.getElementById('f-device').value;
+  if (device === 'Other') {
+    device = document.getElementById('f-device-other').value.trim() || 'Other';
+  }
+  var notes = document.getElementById('f-notes').value.trim();
+  var step  = document.getElementById('f-step').value.trim();
+
+  if (!date || !endtime || !start || !dest || !device) {
+    alert('Please complete all required fields before submitting.');
+    return;
+  }
+
+  // Build FormData
+  var fd = new FormData();
+  files.forEach(function(f) { fd.append('files', f.file, f.file.name); });
+  fd.append('trip_date',     date);
+  fd.append('trip_end_time', endtime);
+  fd.append('start_point',   start);
+  fd.append('destination',   dest);
+  fd.append('device',        device);
+  if (notes)  fd.append('notes',       notes);
+  if (step)   fd.append('step_number', step);
+
+  // Lock UI
+  uploading = true;
+  renderFiles();
+  var btn  = document.getElementById('submit-btn');
+  var hint = document.getElementById('submit-hint');
+  btn.disabled = true;
+  btn.textContent = 'Uploading…';
+
+  // Show progress bar
+  var progWrap = document.getElementById('upload-progress-wrap');
+  var progBar  = document.getElementById('upload-progress-bar');
+  var progPct  = document.getElementById('upload-progress-pct');
+  progWrap.style.display = '';
+
+  // XHR with real progress events
+  var xhr = new XMLHttpRequest();
+
+  xhr.upload.addEventListener('progress', function(e) {
+    if (e.lengthComputable) {
+      var pct = Math.round(e.loaded / e.total * 100);
+      progBar.style.width = pct + '%';
+      progPct.textContent = pct + '%';
+      btn.textContent = 'Uploading… ' + pct + '%';
+    }
+  });
+
+  xhr.addEventListener('load', function() {
+    uploading = false;
+    progWrap.style.display = 'none';
+
+    if (xhr.status === 201) {
+      var data = JSON.parse(xhr.responseText);
+      showSuccess(data);
+    } else {
+      var err = 'Upload failed.';
+      try { err = JSON.parse(xhr.responseText).error || err; } catch (_) {}
+      showUploadError(err);
+    }
+  });
+
+  xhr.addEventListener('error', function() {
+    uploading = false;
+    progWrap.style.display = 'none';
+    showUploadError('Network error — please check your connection and try again.');
+  });
+
+  xhr.open('POST', '/api/upload');
+  xhr.withCredentials = true;
+  xhr.send(fd);
+}
+
+/* ── Success screen ──────────────────────────────────────── */
+function showSuccess(data) {
+  document.getElementById('upload-panel').style.display = 'none';
+  document.getElementById('success-panel').style.display = '';
+
+  document.getElementById('ref-num').textContent = data.referenceNumber;
+
+  var p = window.RCT.participant || {};
+  var rows = [
+    ['Participant',   data.participant],
+    ['Group',         'Group ' + data.group],
+    ['Route',         'Route ' + data.route],
+    ['Timeslot',      'Slot '  + data.timeslot],
+    ['Trip Date',     document.getElementById('f-date').value],
+    ['Trip End Time', document.getElementById('f-endtime').value],
+    ['Starting Point',document.getElementById('f-start').value],
+    ['Destination',   document.getElementById('f-dest').value],
+    ['Device',        document.getElementById('f-device').value],
+    ['Files',         data.fileCount + ' file(s) uploaded']
+  ];
+  document.getElementById('submission-summary').innerHTML = rows.map(function(r) {
+    return '<div class="flex justify-between text-sm gap-16">' +
+      '<span class="text-muted">' + r[0] + '</span>' +
+      '<span style="font-weight:500;text-align:right">' + escHtml(String(r[1])) + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+/* ── Upload error ────────────────────────────────────────── */
+function showUploadError(msg) {
+  var btn  = document.getElementById('submit-btn');
+  var hint = document.getElementById('submit-hint');
+  btn.disabled    = false;
+  btn.innerHTML   = '<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg> Submit Evidence Package';
+  hint.innerHTML  = '<span style="color:var(--rose)">⚠ ' + escHtml(msg) + '</span>';
+  renderFiles();
+}
+
+/* ── Reset ───────────────────────────────────────────────── */
+function resetForm() {
+  files = [];
+  uploading = false;
+  renderFiles();
+  document.getElementById('upload-panel').style.display = '';
+  document.getElementById('success-panel').style.display = 'none';
+  var btn = document.getElementById('submit-btn');
+  btn.disabled   = true;
+  btn.innerHTML  = '<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg> Submit Evidence Package';
+  document.getElementById('submit-hint').textContent = 'Add files and complete all required fields to enable submission.';
+  document.getElementById('upload-progress-wrap').style.display = 'none';
+}
+
+/* ── Live form validation wiring ────────────────────────── */
+document.addEventListener('DOMContentLoaded', function() {
+  // Set today's date
+  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+
+  // Recheck submit button whenever any field changes
+  ['f-date','f-endtime','f-start','f-dest','f-notes','f-device-other','f-step'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('input', checkSubmit);
+  });
+});
+
+/* ── Pre-fill locked fields from participant session ───── */
+RCT.init(function (p) {
+  var banner = document.getElementById('participant-banner');
+  document.getElementById('banner-name').textContent  = p.name;
+  document.getElementById('banner-code').textContent  = p.participantCode;
+  document.getElementById('banner-group').textContent = p.group;
+  document.getElementById('banner-route').textContent = p.route;
+  document.getElementById('banner-slot').textContent  = p.timeslot;
+  banner.style.display = '';
+
+  var gSelect = document.getElementById('f-group');
+  gSelect.value = p.group; gSelect.disabled = true;
+
+  var pidInput = document.getElementById('f-pid');
+  pidInput.value = p.participantCode; pidInput.readOnly = true;
+
+  var slotSelect = document.getElementById('f-slot');
+  slotSelect.value = p.timeslot; slotSelect.disabled = true;
+
+  var routeSelect = document.getElementById('f-route');
+  routeSelect.value = p.route; routeSelect.disabled = true;
+});
+</script>
+</body>
+</html>

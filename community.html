@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Community — BarryXI Research</title>
+<link rel="stylesheet" href="style.css">
+<script src="components/auth.js"></script>
+</head>
+<body>
+
+<div class="bg-scene" aria-hidden="true">
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <div class="bg-orb bg-orb-3"></div>
+  <div class="bg-grid"></div>
+</div>
+
+<div id="navbar-placeholder"></div>
+
+<div class="page">
+  <div class="container" style="padding-top:40px;padding-bottom:60px;">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-32 fade-up" style="flex-wrap:wrap;gap:16px;">
+      <div>
+        <div class="badge badge-cyan mb-8">Community</div>
+        <h2>Audit Discussion Board</h2>
+        <p class="text-muted text-sm mt-8">Share findings, report anomalies, help each other improve data quality.</p>
+      </div>
+      <button class="btn btn-primary" id="new-post-btn" onclick="openComposer()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Post
+      </button>
+    </div>
+
+    <!-- Composer (hidden by default) -->
+    <div id="composer" class="card mb-24 fade-up" style="display:none;border-color:rgba(99,102,241,.3);">
+      <h4 class="mb-16">Create a Post</h4>
+      <div class="form-group mb-12">
+        <label class="form-label">Category</label>
+        <select class="form-select" id="post-category">
+          <option value="">Select category…</option>
+          <option value="ETA mismatch">ETA mismatch</option>
+          <option value="Pickup delay">Pickup delay</option>
+          <option value="Price inconsistency">Price inconsistency</option>
+          <option value="Route issue">Route issue</option>
+          <option value="Driver matching issue">Driver matching issue</option>
+          <option value="App bug">App bug</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group mb-12">
+        <label class="form-label">Title</label>
+        <input class="form-input" id="post-title" placeholder="Briefly describe the issue…" maxlength="120">
+      </div>
+      <div class="form-group mb-16">
+        <label class="form-label">Details</label>
+        <textarea class="form-textarea" id="post-body" placeholder="Provide full context: route, timeslot, what you observed…" style="min-height:120px"></textarea>
+      </div>
+      <div class="flex items-center gap-10 mb-16">
+        <label class="btn btn-ghost btn-sm" style="cursor:pointer;">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Attach Image/Video
+          <input type="file" accept="image/*,video/*" style="display:none" id="media-input" onchange="previewMedia(this)">
+        </label>
+        <span id="media-preview-label" class="text-xs text-dim"></span>
+      </div>
+      <div class="flex gap-8">
+        <button class="btn btn-primary btn-sm" onclick="submitPost()">Publish Post</button>
+        <button class="btn btn-ghost btn-sm" onclick="closeComposer()">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Two-column layout: feed + sidebar -->
+    <div style="display:grid;grid-template-columns:1fr 280px;gap:24px;align-items:start;" id="community-layout">
+
+      <!-- ── Feed column ── -->
+      <div>
+        <!-- Filter tabs -->
+        <div class="flex flex-wrap gap-8 mb-20 fade-up delay-1" id="filter-bar" style="overflow-x:auto;padding-bottom:4px;">
+          <button class="filter-tab active" onclick="setFilter('All', this)">All</button>
+          <button class="filter-tab" onclick="setFilter('ETA mismatch', this)">ETA Mismatch</button>
+          <button class="filter-tab" onclick="setFilter('Pickup delay', this)">Pickup Delay</button>
+          <button class="filter-tab" onclick="setFilter('Price inconsistency', this)">Price Issue</button>
+          <button class="filter-tab" onclick="setFilter('Route issue', this)">Route Issue</button>
+          <button class="filter-tab" onclick="setFilter('Driver matching issue', this)">Driver Match</button>
+          <button class="filter-tab" onclick="setFilter('App bug', this)">App Bug</button>
+          <button class="filter-tab" onclick="setFilter('Other', this)">Other</button>
+        </div>
+
+        <!-- Posts feed -->
+        <div id="posts-feed" class="flex flex-col gap-16">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- ── Sidebar column ── -->
+      <aside style="position:sticky;top:calc(var(--nav-h) + 24px);">
+
+        <!-- Trending topics -->
+        <div class="card mb-16 fade-up delay-2">
+          <h4 class="mb-16">🔥 Trending Topics</h4>
+          <div class="flex flex-col gap-8" id="trending-list">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Community stats -->
+        <div class="card fade-up delay-3">
+          <h4 class="mb-16">📊 Community Stats</h4>
+          <div class="flex flex-col gap-8">
+            <div class="flex justify-between text-sm"><span class="text-muted">Total Posts</span><span id="stat-posts" style="font-weight:600">0</span></div>
+            <div class="flex justify-between text-sm"><span class="text-muted">Active Members</span><span style="font-weight:600;color:var(--emerald)">12</span></div>
+            <div class="flex justify-between text-sm"><span class="text-muted">This Week</span><span style="font-weight:600;color:var(--cyan-l)">7 posts</span></div>
+          </div>
+        </div>
+
+        <!-- Guidelines -->
+        <div class="alert alert-info mt-16 fade-up delay-4" style="flex-direction:column;gap:8px;">
+          <div style="font-weight:600;font-size:13px;">📌 Community Guidelines</div>
+          <ul style="font-size:12px;color:var(--text-muted);display:flex;flex-direction:column;gap:6px;padding-left:2px;">
+            <li>• Be specific about route, timeslot, and app version</li>
+            <li>• Attach supporting screenshots when possible</li>
+            <li>• No personal information about drivers</li>
+            <li>• Keep discussion constructive and research-focused</li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<script src="components/navbar.js"></script>
+<script>RCT.init();</script>
+<script>
+/* ── Sample Data ─────────────────────────────────────────────── */
+var posts = [
+  {
+    id:1, author:'ParticipantA7', avatar:'A7', time:'2 hours ago',
+    category:'Price inconsistency', title:'Fare jumped 35% after driver accepted — Route 1',
+    body:'During Slot 2 on Route 1 (University → Central Station), the estimated fare was HK$38–42. After the driver accepted, the in-trip fare showed HK$56. The receipt confirmed HK$55.80. This is a 33% increase post-acceptance.',
+    likes:14, saved:false, liked:false, comments:[
+      {author:'ParticipantB3', avatar:'B3', text:'I experienced the same on Route 2. The jump happened right after driver acceptance. Captured in my screen recording at 10:23 AM.', time:'1 hour ago'}
+    ],
+    showComments:false
+  },
+  {
+    id:2, author:'ParticipantC2', avatar:'C2', time:'5 hours ago',
+    category:'ETA mismatch', title:'Google Maps vs Uber ETA difference of 18 min — Route 3',
+    body:'Google Maps estimated 22 minutes for the City Centre Loop. Uber showed 40 minutes during the same time window. The actual trip took 27 minutes. This kind of ETA inflation could justify higher surge pricing artificially.',
+    likes:9, saved:true, liked:false, comments:[],
+    showComments:false
+  },
+  {
+    id:3, author:'ParticipantB9', avatar:'B9', time:'Yesterday',
+    category:'Driver matching issue', title:'Matched driver 4.2 miles away despite closer drivers visible on map',
+    body:'The Uber map clearly showed 3 drivers within 0.5 miles. I was matched with a driver 4.2 miles away, resulting in an 11-minute wait instead of the expected ~3 minutes. Screenshots attached.',
+    likes:7, saved:false, liked:false, comments:[
+      {author:'ParticipantA7', avatar:'A7', text:'This is interesting — could be related to demand-based allocation rather than proximity. Did you note the surge multiplier at the time?', time:'22 hours ago'},
+      {author:'ParticipantB9', avatar:'B9', text:'No surge at time of request. That makes it more unusual.', time:'21 hours ago'}
+    ],
+    showComments:false
+  },
+  {
+    id:4, author:'ParticipantA3', avatar:'A3', time:'2 days ago',
+    category:'App bug', title:'Screen recording stopped mid-trip — Step 8 data lost',
+    body:'My phone triggered a low-storage warning at Step 8, causing the screen recording to stop automatically. I was able to manually restart but lost approximately 4 minutes of footage covering the trip start. Manually took Step 8 screenshot immediately after.',
+    likes:5, saved:false, liked:false, comments:[],
+    showComments:false
+  }
+];
+
+var activeFilter = 'All';
+
+/* ── Trending calculation ────────────────────────────────────── */
+function getTrending() {
+  var counts = {};
+  posts.forEach(function(p){ counts[p.category] = (counts[p.category]||0) + 1; });
+  return Object.entries(counts).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
+}
+
+/* ── Render feed ─────────────────────────────────────────────── */
+function renderFeed() {
+  var feed = document.getElementById('posts-feed');
+  var filtered = activeFilter === 'All' ? posts : posts.filter(function(p){return p.category === activeFilter;});
+
+  if (filtered.length === 0) {
+    feed.innerHTML = '<div class="card text-center" style="padding:48px"><div style="font-size:32px;margin-bottom:12px">📭</div><p class="text-muted">No posts in this category yet.<br>Be the first to share!</p></div>';
+    return;
+  }
+
+  feed.innerHTML = filtered.map(function(post){
+    var catColors = {
+      'Price inconsistency':'rose','ETA mismatch':'amber','Pickup delay':'amber',
+      'Route issue':'cyan','Driver matching issue':'indigo','App bug':'emerald','Other':'indigo'
+    };
+    var color = catColors[post.category] || 'indigo';
+    var commentsHTML = '';
+    if (post.showComments) {
+      commentsHTML = '<div class="comment-thread">' +
+        post.comments.map(function(c){
+          return '<div class="comment-item flex gap-10">' +
+            '<div class="post-avatar" style="width:30px;height:30px;font-size:10px;flex-shrink:0">' + c.avatar + '</div>' +
+            '<div><div class="text-xs" style="font-weight:600;margin-bottom:4px">' + c.author + ' <span class="text-dim">· ' + c.time + '</span></div>' +
+            '<p class="text-sm text-muted">' + c.text + '</p></div>' +
+          '</div>';
+        }).join('') +
+        '<div class="comment-input-row">' +
+          '<div class="post-avatar" style="width:30px;height:30px;font-size:10px;flex-shrink:0">BX</div>' +
+          '<input class="form-input" style="height:36px;font-size:13px" placeholder="Add a comment…" id="comment-input-' + post.id + '" onkeydown="handleCommentKey(event,' + post.id + ')">' +
+          '<button class="btn btn-secondary btn-xs" onclick="addComment(' + post.id + ')">Post</button>' +
+        '</div>' +
+      '</div>';
+    }
+    return '<div class="post-card fade-up" id="post-' + post.id + '">' +
+      '<div class="flex items-start justify-between gap-12 mb-12">' +
+        '<div class="flex items-center gap-12">' +
+          '<div class="post-avatar">' + post.avatar + '</div>' +
+          '<div>' +
+            '<div style="font-size:13px;font-weight:600">' + post.author + '</div>' +
+            '<div class="text-xs text-dim">' + post.time + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<span class="badge badge-' + color + '">' + post.category + '</span>' +
+      '</div>' +
+      '<h3 style="font-size:15px;margin-bottom:8px">' + post.title + '</h3>' +
+      '<p class="text-sm text-muted" style="line-height:1.65">' + post.body + '</p>' +
+      '<div class="flex items-center gap-4 mt-16" style="padding-top:12px;border-top:1px solid var(--border)">' +
+        '<button class="post-action-btn' + (post.liked ? ' liked' : '') + '" onclick="toggleLike(' + post.id + ')">' +
+          '<svg width="14" height="14" fill="' + (post.liked ? 'currentColor' : 'none') + '" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>' +
+          post.likes +
+        '</button>' +
+        '<button class="post-action-btn" onclick="toggleComments(' + post.id + ')">' +
+          '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>' +
+          post.comments.length + ' ' + (post.comments.length === 1 ? 'reply' : 'replies') +
+        '</button>' +
+        '<button class="post-action-btn' + (post.saved ? ' saved' : '') + '" onclick="toggleSave(' + post.id + ')">' +
+          '<svg width="14" height="14" fill="' + (post.saved ? 'currentColor' : 'none') + '" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>' +
+          (post.saved ? 'Saved' : 'Save') +
+        '</button>' +
+      '</div>' +
+      commentsHTML +
+    '</div>';
+  }).join('');
+
+  document.getElementById('stat-posts').textContent = posts.length;
+}
+
+function renderTrending() {
+  var el = document.getElementById('trending-list');
+  var trending = getTrending();
+  el.innerHTML = trending.map(function(t){
+    return '<div class="trending-tag" onclick="setFilterByName(\'' + t[0] + '\')">' +
+      '<span style="color:var(--rose)">🔥</span>' +
+      '<span>' + t[0] + '</span>' +
+      '<span class="text-xs text-dim" style="margin-left:auto">' + t[1] + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+/* ── Interactions ─────────────────────────────────────────────── */
+function setFilter(cat, btn) {
+  activeFilter = cat;
+  document.querySelectorAll('.filter-tab').forEach(function(t){ t.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  renderFeed();
+}
+
+function setFilterByName(cat) {
+  activeFilter = cat;
+  document.querySelectorAll('.filter-tab').forEach(function(t){
+    t.classList.toggle('active', t.textContent.trim().toLowerCase() === cat.toLowerCase() || t.textContent.trim() === 'All' && cat === 'All');
+  });
+  renderFeed();
+}
+
+function toggleLike(id) {
+  var post = posts.find(function(p){ return p.id === id; });
+  if (!post) return;
+  post.liked = !post.liked;
+  post.likes += post.liked ? 1 : -1;
+  renderFeed();
+}
+
+function toggleSave(id) {
+  var post = posts.find(function(p){ return p.id === id; });
+  if (!post) return;
+  post.saved = !post.saved;
+  renderFeed();
+}
+
+function toggleComments(id) {
+  var post = posts.find(function(p){ return p.id === id; });
+  if (!post) return;
+  post.showComments = !post.showComments;
+  renderFeed();
+}
+
+function handleCommentKey(e, id) {
+  if (e.key === 'Enter') addComment(id);
+}
+
+function addComment(id) {
+  var input = document.getElementById('comment-input-' + id);
+  if (!input || !input.value.trim()) return;
+  var post = posts.find(function(p){ return p.id === id; });
+  if (!post) return;
+  post.comments.push({ author:'BarryXI', avatar:'BX', text: input.value.trim(), time:'Just now' });
+  post.showComments = true;
+  renderFeed();
+}
+
+/* ── Composer ─────────────────────────────────────────────────── */
+function openComposer() {
+  document.getElementById('composer').style.display = '';
+  document.getElementById('new-post-btn').style.display = 'none';
+  document.getElementById('post-title').focus();
+}
+
+function closeComposer() {
+  document.getElementById('composer').style.display = 'none';
+  document.getElementById('new-post-btn').style.display = '';
+  document.getElementById('post-title').value = '';
+  document.getElementById('post-body').value = '';
+  document.getElementById('post-category').value = '';
+  document.getElementById('media-preview-label').textContent = '';
+}
+
+function previewMedia(input) {
+  if (input.files && input.files[0]) {
+    document.getElementById('media-preview-label').textContent = '📎 ' + input.files[0].name;
+  }
+}
+
+function submitPost() {
+  var cat   = document.getElementById('post-category').value;
+  var title = document.getElementById('post-title').value.trim();
+  var body  = document.getElementById('post-body').value.trim();
+  if (!cat || !title || !body) {
+    alert('Please fill in category, title, and details before publishing.');
+    return;
+  }
+  posts.unshift({
+    id: Date.now(), author:'BarryXI', avatar:'BX', time:'Just now',
+    category: cat, title: title, body: body,
+    likes:0, saved:false, liked:false, comments:[], showComments:false
+  });
+  closeComposer();
+  activeFilter = 'All';
+  document.querySelectorAll('.filter-tab').forEach(function(t,i){ t.classList.toggle('active', i===0); });
+  renderFeed();
+  renderTrending();
+}
+
+/* ── Responsive sidebar ────────────────────────────────────────── */
+function checkLayout() {
+  var layout = document.getElementById('community-layout');
+  if (!layout) return;
+  if (window.innerWidth < 900) {
+    layout.style.gridTemplateColumns = '1fr';
+  } else {
+    layout.style.gridTemplateColumns = '1fr 280px';
+  }
+}
+window.addEventListener('resize', checkLayout);
+checkLayout();
+
+/* Init */
+renderFeed();
+renderTrending();
+</script>
+</body>
+</html>

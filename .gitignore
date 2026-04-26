@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+
+# Environment — never commit real secrets
+.env
+
+# SQLite database (auto-created on first run)
+server/data/
+
+# Uploaded files (can be large; back up separately)
+uploads/
+
+# OS noise
+.DS_Store
+Thumbs.db

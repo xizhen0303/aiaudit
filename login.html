@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Participant Login — RCT Research</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Animated background -->
+<div class="bg-scene" aria-hidden="true">
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <div class="bg-orb bg-orb-3"></div>
+  <div class="bg-grid"></div>
+</div>
+
+<div class="page">
+  <div class="container-sm" style="display:grid;place-items:center;min-height:100vh;padding-top:40px;padding-bottom:40px;">
+    <div class="card" style="width:100%;max-width:420px;">
+
+      <div class="text-center mb-24">
+        <h2 style="letter-spacing:-.01em;">Participant Login</h2>
+        <p class="text-muted text-sm mt-8">Enter your email or Participant ID and password/access code to continue.</p>
+      </div>
+
+      <form id="login-form">
+        <div class="form-group mb-16">
+          <label class="form-label" for="participant-code">Email / Participant ID</label>
+          <input class="form-input" id="participant-code" type="text" placeholder="you@example.com or P-2024-042" required autofocus>
+        </div>
+
+        <div class="form-group mb-20">
+          <label class="form-label" for="access-code">Password / Access Code</label>
+          <input class="form-input" id="access-code" type="password" placeholder="Enter your password or access code" required>
+        </div>
+
+        <div id="error-msg" class="alert alert-error mb-16" style="display:none;padding:10px 14px;font-size:13px;">
+          <span id="error-text"></span>
+        </div>
+
+        <button class="btn btn-primary w-full btn-lg" id="login-btn" type="submit">
+          Sign In
+        </button>
+      </form>
+
+      <div class="text-center mt-20" style="display:flex;flex-direction:column;gap:8px;">
+        <a href="signup.html" class="text-xs" style="color:var(--indigo-l);">New participant? Register with email →</a>
+        <a href="help.html" class="text-xs" style="color:var(--indigo-l);">Need help? Contact the research team →</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+var DEBUG_LOGIN = new URLSearchParams(window.location.search).get('debug') === '1';
+
+function getSafeNextPath() {
+  var params = new URLSearchParams(window.location.search);
+  var next = params.get('next');
+  if (!next) return null;
+
+  var decoded;
+  try {
+    decoded = decodeURIComponent(next);
+  } catch (_) {
+    return null;
+  }
+
+  if (!decoded.startsWith('/') || decoded.startsWith('//')) {
+    return null;
+  }
+
+  return decoded;
+}
+
+function showError(message) {
+  var errBox  = document.getElementById('error-msg');
+  var errText = document.getElementById('error-text');
+  errText.textContent = message;
+  errBox.style.display = '';
+}
+
+function setSubmitting(isSubmitting) {
+  var btn = document.getElementById('login-btn');
+  btn.disabled = isSubmitting;
+  btn.textContent = isSubmitting ? 'Signing in…' : 'Sign In';
+}
+
+function ensureDebugPanel() {
+  if (!DEBUG_LOGIN) return null;
+  var existing = document.getElementById('login-debug-panel');
+  if (existing) return existing;
+
+  var panel = document.createElement('div');
+  panel.id = 'login-debug-panel';
+  panel.style.position = 'fixed';
+  panel.style.right = '12px';
+  panel.style.bottom = '12px';
+  panel.style.width = '380px';
+  panel.style.maxHeight = '55vh';
+  panel.style.overflow = 'auto';
+  panel.style.padding = '10px';
+  panel.style.borderRadius = '8px';
+  panel.style.background = 'rgba(2, 6, 23, 0.92)';
+  panel.style.border = '1px solid rgba(99,102,241,.35)';
+  panel.style.boxShadow = '0 8px 24px rgba(0,0,0,.35)';
+  panel.style.font = '12px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
+  panel.style.color = '#dbeafe';
+  panel.style.zIndex = '99999';
+
+  var title = document.createElement('div');
+  title.textContent = 'Login Debug (debug=1)';
+  title.style.fontWeight = '700';
+  title.style.marginBottom = '6px';
+  title.style.color = '#93c5fd';
+  panel.appendChild(title);
+
+  var logs = document.createElement('div');
+  logs.id = 'login-debug-logs';
+  panel.appendChild(logs);
+
+  document.body.appendChild(panel);
+  return panel;
+}
+
+function debugLog(message, data) {
+  if (!DEBUG_LOGIN) return;
+  ensureDebugPanel();
+  var logs = document.getElementById('login-debug-logs');
+  if (!logs) return;
+
+  var row = document.createElement('div');
+  row.style.marginBottom = '6px';
+  row.style.whiteSpace = 'pre-wrap';
+
+  var ts = new Date().toLocaleTimeString();
+  var suffix = '';
+  if (typeof data !== 'undefined') {
+    try {
+      suffix = ' ' + JSON.stringify(data);
+    } catch (_) {
+      suffix = ' ' + String(data);
+    }
+  }
+  row.textContent = '[' + ts + '] ' + message + suffix;
+  logs.appendChild(row);
+  logs.scrollTop = logs.scrollHeight;
+}
+
+function verifySessionThenRedirect(nextPath, fallbackPath) {
+  debugLog('verify session start', { nextPath: nextPath, fallbackPath: fallbackPath });
+
+  return fetch('/api/participant/me', {
+    credentials: 'include',
+    cache: 'no-store'
+  }).then(function (r) {
+    debugLog('verify /api/participant/me', { status: r.status, ok: r.ok });
+    if (!r.ok) {
+      throw new Error('session_not_persisted');
+    }
+    var target = nextPath || fallbackPath || '/dashboard.html';
+    debugLog('redirect ->', target);
+    window.location.assign(target);
+  });
+}
+
+(function() {
+  'use strict';
+
+  debugLog('page init', {
+    href: window.location.href,
+    next: getSafeNextPath(),
+    cookiesEnabled: navigator.cookieEnabled
+  });
+
+  fetch('/api/participant/me', { credentials: 'include', cache: 'no-store' })
+    .then(function(r) {
+      debugLog('init /api/participant/me', { status: r.status, ok: r.ok });
+      if (r.ok) {
+        var next = getSafeNextPath();
+        var target = next || '/dashboard.html';
+        debugLog('already logged in ->', target);
+        window.location.assign(target);
+      }
+    })
+    .catch(function(err) {
+      debugLog('init check failed', err && err.message ? err.message : 'unknown');
+    });
+
+  var form = document.getElementById('login-form');
+  if (form) {
+    form.addEventListener('submit', handleLogin);
+    debugLog('submit handler attached');
+  } else {
+    debugLog('submit handler attach failed: form not found');
+  }
+})();
+
+function handleLogin(e) {
+  e.preventDefault();
+
+  var codeInput  = document.getElementById('participant-code');
+  var tokenInput = document.getElementById('access-code');
+  var errBox     = document.getElementById('error-msg');
+
+  var participant_code = codeInput.value.trim();
+  var access_code      = tokenInput.value.trim();
+
+  if (!participant_code || !access_code) return false;
+
+  debugLog('submit login', { participant_code: participant_code, access_len: access_code.length });
+
+  setSubmitting(true);
+  errBox.style.display = 'none';
+
+  fetch('/api/participant/login', {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ participant_code: participant_code, access_code: access_code })
+  })
+    .then(function(r) {
+      debugLog('POST /api/participant/login', { status: r.status, ok: r.ok });
+      if (r.status === 401) {
+        throw new Error('invalid_credentials');
+      }
+      if (!r.ok) {
+        throw new Error('login_failed');
+      }
+      return r.json();
+    })
+    .then(function(data) {
+      debugLog('login response payload', data);
+      var next = getSafeNextPath();
+      return verifySessionThenRedirect(next, data.redirect || '/dashboard.html');
+    })
+    .catch(function(err) {
+      debugLog('login flow error', err && err.message ? err.message : 'unknown');
+      if (err && err.message === 'invalid_credentials') {
+        showError('Invalid participant ID or access code.');
+      } else if (err && err.message === 'session_not_persisted') {
+        showError('Login succeeded but your browser blocked the session cookie. Please allow cookies for localhost, disable interfering extensions, then try again.');
+      } else {
+        showError('Something went wrong. Please try again.');
+      }
+    })
+    .finally(function() {
+      setSubmitting(false);
+    });
+
+  return false;
+}
+</script>
+
+</body>
+</html>

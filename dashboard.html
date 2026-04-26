@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Dashboard — RCT Research</title>
+<link rel="stylesheet" href="style.css">
+<script src="components/auth.js"></script>
+</head>
+<body>
+
+<div class="bg-scene" aria-hidden="true">
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <div class="bg-orb bg-orb-3"></div>
+  <div class="bg-grid"></div>
+</div>
+
+<div id="navbar-placeholder"></div>
+
+<div class="page">
+  <div class="container" style="padding-top:40px;padding-bottom:60px;">
+
+    <!-- Welcome header -->
+    <div class="flex items-center justify-between mb-32 fade-up" style="flex-wrap:wrap;gap:16px;">
+      <div class="flex items-center gap-16">
+        <div id="p-avatar" class="nav-avatar"
+             style="width:52px;height:52px;font-size:16px;border-radius:14px;">…</div>
+        <div>
+          <h2>Welcome back, <span id="p-name">Loading…</span></h2>
+          <div class="flex items-center gap-10 mt-4">
+            <span class="text-muted text-sm">
+              Participant ID: <code id="p-code" style="color:var(--indigo-l)">—</code>
+            </span>
+            <span id="p-status" class="badge badge-amber">—</span>
+          </div>
+        </div>
+      </div>
+      <div class="flex gap-10">
+        <a href="training.html" class="btn btn-secondary btn-sm">Continue Training</a>
+        <a href="upload.html"   class="btn btn-primary   btn-sm">Upload Files</a>
+      </div>
+    </div>
+
+    <!-- Assignment cards -->
+    <div class="assignment-grid mb-24 fade-up delay-1">
+      <div class="assignment-card">
+        <div class="text-xs text-dim mb-4">Group</div>
+        <div id="p-group" class="assignment-val text-gradient">—</div>
+      </div>
+      <div class="assignment-card">
+        <div class="text-xs text-dim mb-4">Route</div>
+        <div id="p-route-num" class="assignment-val text-gradient">—</div>
+        <div id="p-route-name" class="text-xs text-muted mt-4">—</div>
+      </div>
+      <div class="assignment-card">
+        <div class="text-xs text-dim mb-4">User Type</div>
+        <div class="assignment-val" style="font-size:1.1rem;color:var(--cyan-l)">Regular</div>
+      </div>
+      <div class="assignment-card">
+        <div class="text-xs text-dim mb-4">Timeslot</div>
+        <div id="p-slot-num" class="assignment-val text-gradient">—</div>
+        <div id="p-slot-time" class="text-xs text-muted mt-4">—</div>
+      </div>
+    </div>
+
+    <!-- Main grid -->
+    <div class="grid grid-2 gap-24">
+
+      <!-- ── Left column ── -->
+      <div class="flex flex-col gap-20">
+
+        <!-- Training progress (static for MVP — will be dynamic in a later phase) -->
+        <div class="card card-hover fade-up delay-2">
+          <div class="flex items-center justify-between mb-20">
+            <h3>Training Progress</h3>
+            <span class="badge badge-amber">In Progress</span>
+          </div>
+          <div class="flex items-center gap-12 mb-6">
+            <div style="font-size:2rem;font-weight:800;color:var(--indigo-l);line-height:1">20%</div>
+            <div class="text-sm text-muted">2 / 10 modules complete</div>
+          </div>
+          <div class="progress mb-16"><div class="progress-bar" style="width:20%"></div></div>
+          <div class="flex flex-col gap-6">
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-muted">Welcome &amp; Introduction</span>
+              <span class="badge badge-emerald">Done</span>
+            </div>
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-muted">Group &amp; Route Assignments</span>
+              <span class="badge badge-emerald">Done</span>
+            </div>
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-muted">User Protocol Rules</span>
+              <span class="badge badge-amber">In Progress</span>
+            </div>
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-muted">Timeslots &amp; Scheduling</span>
+              <span class="badge badge-indigo">Pending</span>
+            </div>
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-muted">During-Trip Steps</span>
+              <span class="badge badge-indigo">Pending</span>
+            </div>
+          </div>
+          <a href="training.html" class="btn btn-secondary w-full mt-16 btn-sm">Continue Module 3 →</a>
+        </div>
+
+        <!-- Checklists -->
+        <div class="grid grid-2 gap-16 fade-up delay-3">
+          <div class="card" style="border-color:rgba(99,102,241,.25);background:rgba(99,102,241,.04);">
+            <h4 class="mb-14" style="color:var(--indigo-l)">Before Your Trip</h4>
+            <div class="flex flex-col gap-6">
+              <div class="checklist-item" onclick="chk(this)"><div class="checklist-box"></div><span class="checklist-label text-xs">Charge phone ≥80%</span></div>
+              <div class="checklist-item" onclick="chk(this)"><div class="checklist-box"></div><span class="checklist-label text-xs">Test screen recording</span></div>
+              <div class="checklist-item" onclick="chk(this)"><div class="checklist-box"></div><span class="checklist-label text-xs">Enable Do Not Disturb</span></div>
+              <div class="checklist-item" onclick="chk(this)"><div class="checklist-box"></div><span class="checklist-label text-xs">Open Google Maps &amp; Uber</span></div>
+              <div class="checklist-item" onclick="chk(this)"><div class="checklist-box"></div><span class="checklist-label text-xs">Know start &amp; destination</span></div>
+            </div>
+          </div>
+          <div class="card" style="border-color:rgba(16,185,129,.25);background:rgba(16,185,129,.04);">
+            <h4 class="mb-14" style="color:#6ee7b7">After Your Trip</h4>
+            <div class="flex flex-col gap-6">
+              <div class="checklist-item" onclick="chk(this)"><div class="checklist-box"></div><span class="checklist-label text-xs">Stop screen recording</span></div>
+              <div class="checklist-item" onclick="chk(this)"><div class="checklist-box"></div><span class="checklist-label text-xs">Verify 10 screenshots saved</span></div>
+              <div class="checklist-item" onclick="chk(this)"><div class="checklist-box"></div><span class="checklist-label text-xs">Rename files correctly</span></div>
+              <div class="checklist-item" onclick="chk(this)"><div class="checklist-box"></div><span class="checklist-label text-xs">Upload within 24 hours</span></div>
+              <div class="checklist-item" onclick="chk(this)"><div class="checklist-box"></div><span class="checklist-label text-xs">Save reference number</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Right column ── -->
+      <div class="flex flex-col gap-20">
+
+        <!-- Quick actions -->
+        <div class="card card-hover fade-up delay-2">
+          <h3 class="mb-16">Quick Actions</h3>
+          <div class="grid grid-3 gap-12">
+            <a href="training.html" class="card-flat text-center"
+               style="padding:20px 12px;transition:border-color .15s;cursor:pointer;"
+               onmouseover="this.style.borderColor='var(--border2)'"
+               onmouseout="this.style.borderColor=''">
+              <div style="font-size:24px;margin-bottom:8px">🎓</div>
+              <div class="text-xs text-muted">Continue<br>Training</div>
+              <div class="text-xs text-dim mt-4">Module 3/10</div>
+            </a>
+            <a href="upload.html" class="card-flat text-center"
+               style="padding:20px 12px;transition:border-color .15s;cursor:pointer;"
+               onmouseover="this.style.borderColor='var(--border2)'"
+               onmouseout="this.style.borderColor=''">
+              <div style="font-size:24px;margin-bottom:8px">☁️</div>
+              <div class="text-xs text-muted">Upload<br>Files</div>
+              <div class="text-xs text-dim mt-4">0 pending</div>
+            </a>
+            <a href="schedule.html" class="card-flat text-center"
+               style="padding:20px 12px;transition:border-color .15s;cursor:pointer;"
+               onmouseover="this.style.borderColor='var(--border2)'"
+               onmouseout="this.style.borderColor=''">
+              <div style="font-size:24px;margin-bottom:8px">🗓️</div>
+              <div class="text-xs text-muted">View<br>Schedule</div>
+              <div id="p-slot-label" class="text-xs text-dim mt-4">—</div>
+            </a>
+          </div>
+        </div>
+
+        <!-- Recent uploads (will be dynamic in Phase 5) -->
+        <div class="card card-hover fade-up delay-3">
+          <div class="flex items-center justify-between mb-16">
+            <h3>Recent Uploads</h3>
+            <a href="upload.html" class="text-xs" style="color:var(--indigo-l)">Upload new →</a>
+          </div>
+          <div id="recent-uploads-list">
+            <div class="text-center text-muted text-sm" style="padding:24px 0;">
+              No submissions yet.<br>
+              <a href="upload.html" style="color:var(--indigo-l);margin-top:8px;display:inline-block;">
+                Upload your first ride →
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Community shortcut -->
+        <a href="community.html" class="card card-gradient card-hover fade-up delay-4"
+           style="display:block;cursor:pointer;">
+          <div class="flex items-center justify-between">
+            <div>
+              <h4>💬 Community Board</h4>
+              <p class="text-sm text-muted mt-6">Share findings · Discuss anomalies</p>
+            </div>
+            <svg width="18" height="18" fill="none" stroke="var(--indigo-l)" stroke-width="2"
+                 viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+            </svg>
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="components/navbar.js"></script>
+<script>
+// ── Checklist interaction ─────────────────────────────────────
+function chk(el) {
+  el.classList.toggle('checked');
+  var box = el.querySelector('.checklist-box');
+  box.innerHTML = el.classList.contains('checked')
+    ? '<svg width="11" height="11" fill="none" stroke="#fff" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>'
+    : '';
+}
+
+// ── Populate from token ───────────────────────────────────────
+RCT.init(function (p) {
+  var route = RCT.ROUTES[p.route] || {};
+
+  // Derive two-letter avatar initials from name
+  var initials = (p.name || p.participantCode)
+    .split(/\s+/).map(function (w) { return w[0] || ''; })
+    .join('').slice(0, 2).toUpperCase();
+
+  // Status badge text + colour
+  var statusLabel = { active:'In Progress', completed:'Completed', inactive:'Inactive' };
+  var statusClass = { active:'badge-amber',  completed:'badge-emerald', inactive:'badge-rose'  };
+
+  document.getElementById('p-avatar').textContent    = initials;
+  document.getElementById('p-name').textContent      = p.name;
+  document.getElementById('p-code').textContent      = p.participantCode;
+  document.getElementById('p-status').textContent    = statusLabel[p.status] || p.status;
+  document.getElementById('p-status').className      = 'badge ' + (statusClass[p.status] || 'badge-indigo');
+
+  document.getElementById('p-group').textContent     = p.group;
+  document.getElementById('p-route-num').textContent = p.route;
+  document.getElementById('p-route-name').textContent= route.name || '';
+
+  document.getElementById('p-slot-num').textContent  = p.timeslot;
+  document.getElementById('p-slot-time').textContent = RCT.SLOT_TIMES[p.timeslot] || '';
+  document.getElementById('p-slot-label').textContent= 'Slot ' + p.timeslot + ' active';
+});
+</script>
+</body>
+</html>

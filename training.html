@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Training — RCT Research</title>
+<link rel="stylesheet" href="style.css">
+<script src="components/auth.js"></script>
+</head>
+<body>
+
+<div class="bg-scene" aria-hidden="true">
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <div class="bg-orb bg-orb-3"></div>
+  <div class="bg-grid"></div>
+</div>
+
+<div id="navbar-placeholder"></div>
+
+<div class="page">
+  <div class="container" style="padding-top:40px;padding-bottom:60px;">
+
+    <!-- Page header -->
+    <div class="section-header fade-up">
+      <div class="badge badge-indigo">Training Portal</div>
+      <h2>During-Trip Capture Protocol</h2>
+      <p>Follow each step precisely. Every screenshot is required for valid data submission.</p>
+    </div>
+
+    <!-- Checklist controls -->
+    <div class="flex items-center justify-between mb-24 fade-up delay-1" style="flex-wrap:wrap;gap:12px;">
+      <div class="flex items-center gap-12">
+        <span id="progress-text" class="text-sm text-muted">0 / 10 completed</span>
+        <div class="progress" style="width:160px;">
+          <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="flex gap-8">
+        <button class="btn btn-emerald btn-sm" onclick="markAll()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          Mark All Complete
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="resetAll()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-5H1"/></svg>
+          Reset Checklist
+        </button>
+      </div>
+    </div>
+
+    <!-- Module sidebar + step cards layout -->
+    <div class="sidebar-layout">
+
+      <!-- ── Sidebar: module list ── -->
+      <aside class="sidebar card" style="padding:16px;">
+        <div style="font-size:11px;font-weight:700;color:var(--text-dim);letter-spacing:.6px;text-transform:uppercase;padding:4px 8px 12px;">
+          Training Modules
+        </div>
+        <div id="sidebar-modules"></div>
+      </aside>
+
+      <!-- ── Main: step cards ── -->
+      <main id="module-content">
+        <!-- Rendered by JS -->
+      </main>
+
+    </div>
+  </div>
+</div>
+
+<script src="components/navbar.js"></script>
+<script>
+/* ── Data ──────────────────────────────────────────────────── */
+var modules = [
+  {id:1, icon:'👋', title:'Welcome & Introduction',       dur:'5 min',  done:false},
+  {id:2, icon:'🗺️', title:'Group & Route Assignments',    dur:'8 min',  done:false},
+  {id:3, icon:'📋', title:'User Protocol Rules',          dur:'10 min', done:false},
+  {id:4, icon:'🕐', title:'Timeslots & Scheduling',       dur:'6 min',  done:false},
+  {id:5, icon:'✅', title:'Pre-Trip Preparation',         dur:'12 min', done:false},
+  {id:6, icon:'🚗', title:'During-Trip Steps',            dur:'15 min', done:false, isTrip:true},
+  {id:7, icon:'📤', title:'After-Trip Submission',        dur:'10 min', done:false},
+  {id:8, icon:'⚠️', title:'Dos and Don\'ts',              dur:'7 min',  done:false},
+  {id:9, icon:'🛡️', title:'Safety Notes',                 dur:'5 min',  done:false},
+  {id:10,icon:'📞', title:'Contact & Help',               dur:'3 min',  done:false}
+];
+
+var tripSteps = [
+  {
+    num:1, icon:'🎬', title:'Start Screen Recording',
+    app:'System Settings', hasShot:false,
+    img:null,
+    instruction:'Before opening any apps, start a <strong>full-screen recording</strong> on your device. Enable <strong>Do Not Disturb</strong> mode to prevent notifications appearing in the recording.',
+    tip:'Screen recording is mandatory — without it your submission will be rejected.'
+  },
+  {
+    num:2, icon:'🗺️', title:'Screenshot: Google Maps Driving Estimate',
+    app:'Google Maps', hasShot:true,
+    img:'Train_ScreenShot/1.jpg',
+    instruction:'Open Google Maps and enter your <strong>assigned destination</strong>. Select the <strong>driving</strong> route (not transit/walking). Take a screenshot showing the estimated drive time and distance clearly.',
+    tip:'The timestamp and route details must be fully visible.'
+  },
+  {
+    num:3, icon:'💰', title:'Screenshot: Uber Estimated Price',
+    app:'Uber', hasShot:true,
+    img:'Train_ScreenShot/2.jpg',
+    instruction:'Open the Uber app. Enter your pickup and destination points. Take a screenshot of the <strong>fare estimate screen</strong> before requesting the ride.',
+    tip:'Capture the full price range shown. Do not tap Request yet.'
+  },
+  {
+    num:4, icon:'📍', title:'Screenshot: Pickup Confirmation',
+    app:'Uber', hasShot:true,
+    img:'Train_ScreenShot/3.jpg',
+    instruction:'Screenshot the screen showing your <strong>confirmed pickup location</strong> on the map with the address text visible.',
+    tip:'Make sure the pin drop and address label are both in frame.'
+  },
+  {
+    num:5, icon:'⏱️', title:'Screenshot: Wait Time + Price (Before Request)',
+    app:'Uber', hasShot:true,
+    img:'Train_ScreenShot/4.jpg',
+    instruction:'Capture the screen showing <strong>estimated wait time AND the fare price</strong> simultaneously — the moment just before you tap "Request". This is the most critical data point.',
+    tip:'Do NOT tap Request before taking this screenshot.'
+  },
+  {
+    num:6, icon:'✅', title:'Screenshot: Driver Accepted',
+    app:'Uber', hasShot:true,
+    img:'Train_ScreenShot/5.jpg',
+    instruction:'After tapping Request, screenshot the screen showing the <strong>driver has accepted</strong> your ride — including driver name, vehicle info, and the updated ETA.',
+    tip:'Capture within 5 seconds of the acceptance notification.'
+  },
+  {
+    num:7, icon:'🚘', title:'Screenshot: Driver Arrival',
+    app:'Uber', hasShot:true,
+    img:'Train_ScreenShot/6.jpg',
+    instruction:'When the app shows <strong>"Your driver has arrived"</strong>, take a screenshot. Capture the driver location on the map and the arrival notification.',
+    tip:'This confirms the pickup time for data accuracy.'
+  },
+  {
+    num:8, icon:'🛣️', title:'Screenshot: Trip Start ETA',
+    app:'Uber', hasShot:true,
+    img:'Train_ScreenShot/7.jpg',
+    instruction:'Once you are in the vehicle and the trip has started, screenshot the screen showing the <strong>route to destination and estimated arrival time</strong>.',
+    tip:'Capture within 2 minutes of trip start.'
+  },
+  {
+    num:9, icon:'🏁', title:'Screenshot: Trip End',
+    app:'Uber', hasShot:true,
+    img:'Train_ScreenShot/8.jpg',
+    instruction:'When the trip ends and the app shows <strong>"You have arrived"</strong>, take a screenshot capturing the trip completion screen with final status.',
+    tip:'Do not rate the driver until after all screenshots are taken.'
+  },
+  {
+    num:10, icon:'🧾', title:'Screenshot Receipt + Stop Recording',
+    app:'Uber', hasShot:true,
+    img:'Train_ScreenShot/9.jpg',
+    instruction:'Navigate to the <strong>trip receipt</strong> in Uber showing final fare, route, and timestamp. Screenshot it. Then stop your screen recording.',
+    tip:'Verify the recording saved successfully before closing the app.'
+  }
+];
+
+/* ── State ─────────────────────────────────────────────────── */
+var activeModule = 6;
+var stepDone = {};
+tripSteps.forEach(function(s){ stepDone[s.num] = false; });
+
+/* ── Sidebar ───────────────────────────────────────────────── */
+function renderSidebar() {
+  var el = document.getElementById('sidebar-modules');
+  el.innerHTML = modules.map(function(m) {
+    var isDone = m.id < 6;
+    var isActive = m.id === activeModule;
+    var dotClass = isActive ? 'active' : (isDone ? 'done' : '');
+    var dotContent = isDone ? '✓' : m.id;
+    return '<button class="module-btn' + (isActive ? ' active' : '') + '" onclick="goModule(' + m.id + ')">' +
+      '<div class="module-dot ' + dotClass + '">' + dotContent + '</div>' +
+      '<div class="module-info">' +
+        '<div class="module-title">' + m.icon + ' ' + m.title + '</div>' +
+        '<div class="module-dur">' + m.dur + '</div>' +
+      '</div>' +
+    '</button>';
+  }).join('');
+}
+
+/* ── Module Content ────────────────────────────────────────── */
+
+// Set by RCT.init(); used by module 5 body function below
+var _participantCode = '—';
+
+var nonTripContent = {
+  1: { icon:'👋', body:'<p class="text-muted" style="line-height:1.8">Welcome to the BarryXI Research Platform. This study investigates algorithmic pricing patterns in ride-sharing applications. Your role as a participant is to capture authentic ride data during your assigned timeslot.</p><div class="alert alert-info mt-16"><span class="alert-icon">ℹ️</span><div>Your participation is voluntary and all collected data is anonymised before analysis. Please read the consent form before proceeding.</div></div>' },
+  2: { icon:'🗺️', body:'<div class="grid grid-3 mt-8"><div class="card-flat"><div style="font-size:22px;margin-bottom:8px">🅰️</div><h4>Group A</h4><p class="text-sm text-muted mt-4">Route 1 · Northern District<br>University → Central Station</p></div><div class="card-flat"><div style="font-size:22px;margin-bottom:8px">🅱️</div><h4>Group B</h4><p class="text-sm text-muted mt-4">Route 2 · Eastern Corridor<br>Tech Park → Waterfront</p></div><div class="card-flat"><div style="font-size:22px;margin-bottom:8px">🅲</div><h4>Group C</h4><p class="text-sm text-muted mt-4">Route 3 · City Centre Loop<br>Market Sq → Old Town</p></div></div>' },
+  3: { icon:'📋', body:'<div class="flex flex-col gap-8 mt-8">' + ['Do not deviate from the assigned route','Keep your phone visible and accessible throughout the trip','Do not inform the driver you are conducting research','Capture every required screenshot — missing steps invalidate data','Complete your trip within the assigned timeslot window','Upload all files within 24 hours of your trip','Do not share screenshots publicly before study completion'].map(function(r,i){return '<div class="checklist-item"><div class="checklist-box" style="background:rgba(99,102,241,.15);border-color:rgba(99,102,241,.3)"><svg width="10" height="10" fill="none" stroke="var(--indigo-l)" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><span class="text-sm">' + r + '</span></div>';}).join('') + '</div>' },
+  4: { icon:'🕐', body:'<div class="flex flex-col gap-8 mt-8">' + [['Slot 1','08:00–10:00 AM','Group A','done'],['Slot 2','10:00 AM–12:00 PM','Group A','done'],['Slot 3','12:00–02:00 PM','Group B','active'],['Slot 4','02:00–04:00 PM','Group B','upcoming'],['Slot 5','04:00–06:00 PM','Group C','upcoming']].map(function(s){var color=s[3]==='done'?'emerald':s[3]==='active'?'indigo':'amber';return '<div class="card-flat flex items-center justify-between"><div><div class="text-sm" style="font-weight:600">'+s[0]+'</div><div class="text-xs text-dim">'+s[1]+' · '+s[2]+'</div></div><span class="badge badge-'+color+'">'+s[3]+'</span></div>';}).join('') + '</div>' },
+  5: { icon:'✅', body: function() {
+    return '<p class="text-muted text-sm mb-16">Complete these preparations <strong>before</strong> your trip timeslot begins:</p><div class="flex flex-col gap-8">' +
+      ['Charge your phone to at least 80%','Enable screen recording permission in Settings','Test screen recording with a 10-second test clip','Enable Do Not Disturb mode','Install & log in to both Google Maps and Uber','Know your assigned start point and destination','Have participant ID ready: ' + _participantCode]
+        .map(function(t){return '<div class="checklist-item"><div class="checklist-box"></div><span class="checklist-label text-sm">'+t+'</span></div>';})
+        .join('') +
+      '</div>';
+  }},
+  7: { icon:'📤', body:'<div class="flex flex-col gap-8 mt-8">' + ['Stop screen recording immediately after the receipt screenshot','Verify all 10 screenshots are saved in your camera roll','Name files according to the required format','Upload via the Upload page within 24 hours','Check upload confirmation and save your reference number','Complete the post-trip survey if assigned','Contact support if any files are missing or corrupt'].map(function(t){return '<div class="checklist-item"><div class="checklist-box"></div><span class="checklist-label text-sm">'+t+'</span></div>';}).join('') + '</div>' },
+  8: { icon:'⚠️', body:'<div class="grid grid-2 gap-16 mt-8"><div class="card" style="border-color:rgba(16,185,129,.25);background:rgba(16,185,129,.04)"><h4 style="color:#6ee7b7;margin-bottom:12px">✅ Do</h4><ul style="display:flex;flex-direction:column;gap:8px">' + ['Follow the exact route assigned','Screenshot at every specified step','Use your personal phone only','Submit files with correct naming','Report any anomalies to the team'].map(function(t){return '<li class="text-sm text-muted">• '+t+'</li>';}).join('') + '</ul></div><div class="card" style="border-color:rgba(244,63,94,.25);background:rgba(244,63,94,.04)"><h4 style="color:#fb7185;margin-bottom:12px">❌ Don\'t</h4><ul style="display:flex;flex-direction:column;gap:8px">' + ['Deviate from the assigned route','Skip or delay required screenshots','Disclose research to driver','Share raw data with others','Submit files with incorrect metadata'].map(function(t){return '<li class="text-sm text-muted">• '+t+'</li>';}).join('') + '</ul></div></div>' },
+  9: { icon:'🛡️', body:'<div class="alert alert-error mb-16"><span class="alert-icon">🚨</span><div><strong>Emergency Numbers:</strong> 999 (Hong Kong) · 112 (International)</div></div><div class="flex flex-col gap-8">' + ['If you feel unsafe at any point, end the trip immediately','Share your live location with a trusted contact before the trip','Do not use your phone while walking to/from the pickup point','Trust your instincts — your safety is always the priority','Contact Mr. Barry XI immediately if an incident occurs'].map(function(t){return '<div class="card-flat text-sm">🛡️ '+t+'</div>';}).join('') + '</div>' },
+  10: { icon:'📞', body:'<div class="contact-card mt-8"><div class="flex items-center gap-16 mb-16"><div class="contact-avatar">BX</div><div><h3>Mr. Barry XI</h3><p class="text-sm text-muted">Principal Investigator · BarryXI Research</p></div></div><div class="contact-row"><span>✉️</span><a href="mailto:zhen.xi@connect.polyu.hk" style="color:var(--indigo-l)">zhen.xi@connect.polyu.hk</a></div><div class="contact-row"><span>🕐</span><span>Mon–Fri, 9:00 AM – 6:00 PM (HKT)</span></div><div class="contact-row"><span>🏛️</span><span>The Hong Kong Polytechnic University</span></div></div>' }
+};
+
+function renderContent() {
+  var el = document.getElementById('module-content');
+  var m = modules.find(function(x){ return x.id === activeModule; });
+
+  if (m && m.isTrip) {
+    renderTripSteps();
+    return;
+  }
+
+  var data = nonTripContent[activeModule];
+  if (!data) return;
+
+  // body can be a string or a function (for dynamic content like module 5)
+  var bodyHTML = typeof data.body === 'function' ? data.body() : data.body;
+
+  el.innerHTML = '<div class="card fade-up">' +
+    '<div class="flex items-center gap-16 mb-20">' +
+      '<div style="font-size:28px">' + data.icon + '</div>' +
+      '<h3>' + m.title + '</h3>' +
+    '</div>' +
+    bodyHTML +
+    '<div class="flex justify-between mt-24" style="padding-top:16px;border-top:1px solid var(--border)">' +
+      (activeModule > 1 ? '<button class="btn btn-ghost btn-sm" onclick="goModule(' + (activeModule-1) + ')">← Previous</button>' : '<span></span>') +
+      (activeModule < 10 ? '<button class="btn btn-secondary btn-sm" onclick="goModule(' + (activeModule+1) + ')">Next →</button>' : '<span class="badge badge-emerald">Training Complete 🎉</span>') +
+    '</div>' +
+  '</div>';
+}
+
+function renderTripSteps() {
+  var el = document.getElementById('module-content');
+  var doneCount = Object.values(stepDone).filter(Boolean).length;
+
+  el.innerHTML = '<div id="trip-steps-container">' +
+    tripSteps.map(function(step) {
+      var done = stepDone[step.num];
+      return '<div class="step-card' + (done ? ' step-done' : '') + ' mb-16 fade-up" id="step-card-' + step.num + '">' +
+        '<div class="step-header">' +
+          '<div class="step-num-badge" aria-hidden="true">' + step.num + '</div>' +
+          '<div style="flex:1;min-width:0">' +
+            '<div class="step-title">' + step.icon + ' ' + step.title + '</div>' +
+            '<div class="step-meta">' + step.app + '</div>' +
+          '</div>' +
+          (step.hasShot ? '<span class="badge badge-required">Required Screenshot</span>' : '<span class="badge badge-amber">Action</span>') +
+        '</div>' +
+        '<div class="step-body">' +
+          (step.hasShot && step.img
+            ? '<div class="step-screenshot"><img src="' + step.img + '" alt="Example screenshot for step ' + step.num + '" loading="lazy" onerror="this.parentElement.innerHTML=\'<div class=step-screenshot-placeholder><div style=font-size:28px;margin-bottom:8px>📸</div><div>Example Screenshot</div></div>\'"></div>'
+            : (step.hasShot
+              ? '<div class="step-screenshot"><div class="step-screenshot-placeholder"><div style="font-size:28px;margin-bottom:8px">📸</div><div>Screenshot<br>Placeholder</div></div></div>'
+              : '<div class="step-screenshot" style="background:rgba(99,102,241,.06)"><div class="step-screenshot-placeholder"><div style="font-size:28px;margin-bottom:8px">' + step.icon + '</div><div>Action<br>Required</div></div></div>')
+          ) +
+          '<div class="step-content">' +
+            '<p class="step-instruction">' + step.instruction + '</p>' +
+            (step.tip ? '<div class="alert alert-info mt-12" style="padding:10px 14px"><span style="flex-shrink:0">💡</span><span style="font-size:12px">' + step.tip + '</span></div>' : '') +
+            '<div class="step-app-tag"><span>📱</span>' + step.app + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="step-footer">' +
+          '<span class="text-xs text-dim">Step ' + step.num + ' of 10</span>' +
+          '<button class="step-mark-btn' + (done ? ' done' : '') + '" onclick="toggleStep(' + step.num + ')">' +
+            (done
+              ? '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Done'
+              : '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg> Mark Complete') +
+          '</button>' +
+        '</div>' +
+      '</div>';
+    }).join('') +
+    '<div class="flex justify-between mt-8">' +
+      '<button class="btn btn-ghost btn-sm" onclick="goModule(5)">← Previous</button>' +
+      '<button class="btn btn-secondary btn-sm" onclick="goModule(7)">Next →</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function updateProgress() {
+  var count = Object.values(stepDone).filter(Boolean).length;
+  document.getElementById('progress-text').textContent = count + ' / 10 completed';
+  document.getElementById('progress-bar').style.width = (count * 10) + '%';
+}
+
+function toggleStep(num) {
+  stepDone[num] = !stepDone[num];
+  updateProgress();
+  if (activeModule === 6) renderTripSteps();
+}
+
+function markAll() {
+  tripSteps.forEach(function(s){ stepDone[s.num] = true; });
+  updateProgress();
+  if (activeModule === 6) renderTripSteps();
+}
+
+function resetAll() {
+  tripSteps.forEach(function(s){ stepDone[s.num] = false; });
+  updateProgress();
+  if (activeModule === 6) renderTripSteps();
+}
+
+function goModule(id) {
+  activeModule = id;
+  renderSidebar();
+  renderContent();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* Init */
+renderSidebar();
+renderContent();
+updateProgress();
+
+/* ── Populate participant ID via token ───────────────────────
+   Training is accessible without a token (it's educational content),
+   but we try to load participant data to personalise module 5.       */
+RCT.init(function (p) {
+  _participantCode = p.participantCode;
+  // Re-render module 5 only if it's currently displayed
+  if (activeModule === 5) renderContent();
+});
+</script>
+</body>
+</html>

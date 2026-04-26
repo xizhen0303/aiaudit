@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Admin Login — RCT Research</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<div class="bg-scene" aria-hidden="true">
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <div class="bg-grid"></div>
+</div>
+
+<div style="display:grid;place-items:center;min-height:100vh;position:relative;z-index:1;padding:24px;">
+  <div style="width:100%;max-width:400px;">
+
+    <div class="text-center mb-32">
+      <div class="nav-logo-icon" style="width:48px;height:48px;font-size:18px;margin:0 auto 16px;">BX</div>
+      <h2>Admin Portal</h2>
+      <p class="text-muted text-sm mt-8">AI Algorithm Auditing Research Platform</p>
+    </div>
+
+    <div class="card card-glow" style="border-color:rgba(99,102,241,.3);">
+      <h3 class="mb-20">Sign In</h3>
+
+      <div id="error-box" class="alert alert-error mb-16" style="display:none;">
+        <span class="alert-icon">⚠️</span>
+        <span id="error-msg"></span>
+      </div>
+
+      <form id="login-form" onsubmit="return doLogin(event)">
+        <div class="form-group mb-16">
+          <label class="form-label" for="username">Username</label>
+          <input class="form-input" id="username" name="username" type="text"
+                 placeholder="admin" autocomplete="username" required>
+        </div>
+        <div class="form-group mb-24">
+          <label class="form-label" for="password">Password</label>
+          <input class="form-input" id="password" name="password" type="password"
+                 placeholder="••••••••" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-full" id="login-btn">
+          Sign In →
+        </button>
+      </form>
+    </div>
+
+    <p class="text-center text-xs text-dim mt-16">
+      Authorised personnel only · <a href="../home.html" style="color:var(--indigo-l)">Back to site</a>
+    </p>
+
+  </div>
+</div>
+
+<script>
+function setBusy(isBusy) {
+  var btn = document.getElementById('login-btn');
+  btn.disabled = isBusy;
+  btn.textContent = isBusy ? 'Signing in…' : 'Sign In →';
+}
+
+function showError(message) {
+  var errBox = document.getElementById('error-box');
+  var errMsg = document.getElementById('error-msg');
+  errMsg.textContent = message;
+  errBox.style.display = '';
+}
+
+function doLogin(e) {
+  e.preventDefault();
+  var errBox = document.getElementById('error-box');
+  errBox.style.display = 'none';
+  setBusy(true);
+
+  fetch('/admin/login', {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      username: document.getElementById('username').value.trim(),
+      password: document.getElementById('password').value
+    })
+  })
+  .then(function(r) {
+    return r.json().catch(function(){ return {}; }).then(function(d) {
+      return { ok: r.ok, status: r.status, data: d };
+    });
+  })
+  .then(function(res) {
+    if (res.ok) {
+      window.location.assign(res.data.redirect || '/admin/signup-requests.html');
+      return;
+    }
+
+    if (res.status === 429) {
+      showError(res.data.error || 'Too many login attempts — please try again later.');
+    } else {
+      showError(res.data.error || 'Login failed.');
+    }
+
+    setBusy(false);
+  })
+  .catch(function() {
+    showError('Network error — please try again.');
+    setBusy(false);
+  });
+
+  return false;
+}
+
+(function () {
+  var form = document.getElementById('login-form');
+  if (form) form.addEventListener('submit', doLogin);
+})();
+</script>
+</body>
+</html>

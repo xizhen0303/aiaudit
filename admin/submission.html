@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Submission Detail — Admin</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<div class="bg-scene" aria-hidden="true">
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <div class="bg-grid"></div>
+</div>
+
+<!-- Admin navbar -->
+<nav class="navbar">
+  <a href="submissions.html" class="nav-logo">
+    <div class="nav-logo-icon">BX</div>
+    <span>Admin Portal</span>
+  </a>
+  <div class="nav-links">
+    <a href="submissions.html" class="nav-link">← All Submissions</a>
+    <a href="signup-requests.html" class="nav-link">Signup Requests</a>
+  </div>
+  <div class="nav-right">
+    <span id="admin-user" class="text-sm text-muted" style="margin-right:8px;"></span>
+    <button class="btn btn-ghost btn-sm" onclick="logout()">Sign Out</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="container-sm" style="padding-top:40px;padding-bottom:60px;">
+
+    <!-- Header row -->
+    <div id="page-header" class="flex items-center justify-between mb-24 fade-up"
+         style="flex-wrap:wrap;gap:16px;display:none!important;">
+      <div>
+        <div class="badge badge-indigo mb-8">Submission</div>
+        <h2 id="ref-heading" style="font-family:monospace;"></h2>
+      </div>
+      <!-- Status changer -->
+      <div class="flex items-center gap-10 flex-wrap">
+        <span class="text-sm text-muted">Status:</span>
+        <select class="form-select" id="status-select" style="width:auto;"
+                onchange="updateStatus(this.value)">
+          <option value="pending">Pending</option>
+          <option value="reviewed">Reviewed</option>
+          <option value="flagged">Flagged</option>
+        </select>
+        <span id="status-msg" class="text-xs" style="color:var(--emerald);display:none;">✓ Saved</span>
+      </div>
+    </div>
+
+    <div id="loading-msg" class="text-center text-muted" style="padding:60px 0;">Loading…</div>
+
+    <!-- Two-column detail + files -->
+    <div id="detail-grid" class="grid grid-2 gap-20" style="display:none!important;">
+
+      <!-- Left: metadata -->
+      <div class="flex flex-col gap-16">
+        <div class="card fade-up">
+          <h4 class="mb-16">Participant</h4>
+          <div class="flex flex-col gap-8">
+            <div class="flex justify-between text-sm">
+              <span class="text-muted">Participant ID</span>
+              <code id="d-pid" style="color:var(--indigo-l);"></code>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-muted">Name</span>
+              <span id="d-name" style="font-weight:500;"></span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-muted">Group</span>
+              <span id="d-group" class="badge badge-indigo"></span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-muted">Route</span>
+              <span id="d-route" style="font-weight:500;"></span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-muted">Timeslot</span>
+              <span id="d-timeslot" style="font-weight:500;"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card fade-up delay-1">
+          <h4 class="mb-16">Trip Details</h4>
+          <div class="flex flex-col gap-8">
+            <div class="flex justify-between text-sm">
+              <span class="text-muted">Trip Date</span>
+              <span id="d-trip-date" style="font-weight:500;"></span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-muted">End Time</span>
+              <span id="d-end-time" style="font-weight:500;"></span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-muted">From</span>
+              <span id="d-from" style="font-weight:500;text-align:right;max-width:200px;"></span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-muted">To</span>
+              <span id="d-to" style="font-weight:500;text-align:right;max-width:200px;"></span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-muted">Device</span>
+              <span id="d-device" style="font-weight:500;"></span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-muted">Submitted</span>
+              <span id="d-submitted" style="font-weight:500;font-size:12px;"></span>
+            </div>
+          </div>
+        </div>
+
+        <div id="notes-card" class="card fade-up delay-2" style="display:none;">
+          <h4 class="mb-10">Notes</h4>
+          <p id="d-notes" class="text-sm text-muted" style="line-height:1.7;white-space:pre-wrap;"></p>
+        </div>
+      </div>
+
+      <!-- Right: files -->
+      <div class="fade-up delay-2">
+        <div class="flex items-center justify-between mb-12">
+          <h4 id="files-heading">Files</h4>
+        </div>
+        <div id="files-list" class="flex flex-col gap-8">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script>
+var submissionId = new URLSearchParams(window.location.search).get('id');
+
+function logout() {
+  fetch('/admin/logout', { method:'POST' })
+    .then(function() { window.location.href = '/admin/login.html'; });
+}
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  return iso.replace('T',' ').slice(0,16);
+}
+
+function fmtBytes(n) {
+  if (n < 1024) return n + ' B';
+  if (n < 1048576) return (n/1024).toFixed(1) + ' KB';
+  return (n/1048576).toFixed(1) + ' MB';
+}
+
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function updateStatus(status) {
+  var msg = document.getElementById('status-msg');
+  msg.style.display = 'none';
+
+  fetch('/admin/api/submissions/' + submissionId + '/status', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status: status })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.ok) {
+      msg.textContent     = '✓ Saved';
+      msg.style.color     = 'var(--emerald)';
+      msg.style.display   = '';
+      setTimeout(function() { msg.style.display = 'none'; }, 2000);
+    } else {
+      msg.textContent     = '⚠ ' + (d.error || 'Error');
+      msg.style.color     = 'var(--rose)';
+      msg.style.display   = '';
+    }
+  });
+}
+
+function renderFiles(files) {
+  var el = document.getElementById('files-list');
+  document.getElementById('files-heading').textContent = files.length + ' File' + (files.length !== 1 ? 's' : '');
+
+  if (files.length === 0) {
+    el.innerHTML = '<div class="card-flat text-center text-muted text-sm" style="padding:24px;">No files attached.</div>';
+    return;
+  }
+
+  el.innerHTML = files.map(function(f) {
+    var isVideo = f.mime_type && f.mime_type.startsWith('video');
+    var icon    = isVideo ? '🎬' : '🖼️';
+    return '<div class="file-item">' +
+      '<div class="file-icon">' + icon + '</div>' +
+      '<div class="file-info">' +
+        '<div class="file-name" style="font-size:12px;">' + escHtml(f.original_name) + '</div>' +
+        '<div class="file-size">' + fmtBytes(f.size_bytes) + ' · ' +
+          (f.uploaded_at ? fmtDate(f.uploaded_at) : '—') + '</div>' +
+      '</div>' +
+      '<a href="/admin/api/files/' + f.id + '/download" class="btn btn-secondary btn-xs">' +
+        '<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">' +
+          '<path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>' +
+        '</svg>Download' +
+      '</a>' +
+    '</div>';
+  }).join('');
+}
+
+function loadDetail() {
+  if (!submissionId) {
+    document.getElementById('loading-msg').textContent = 'No submission ID in URL.';
+    return;
+  }
+
+  fetch('/admin/api/submissions/' + submissionId)
+    .then(function(r) {
+      if (r.status === 401) { window.location.href = '/admin/login.html'; return null; }
+      if (r.status === 404) {
+        document.getElementById('loading-msg').textContent = 'Submission not found.';
+        return null;
+      }
+      return r.json();
+    })
+    .then(function(data) {
+      if (!data) return;
+      var s = data.submission;
+
+      document.getElementById('loading-msg').style.display = 'none';
+
+      // Header
+      document.getElementById('ref-heading').textContent = s.reference_number;
+      document.getElementById('status-select').value = s.status;
+      document.getElementById('page-header').style.display = '';
+      document.getElementById('detail-grid').style.display = '';
+
+      // Participant
+      document.getElementById('d-pid').textContent      = s.participant_code;
+      document.getElementById('d-name').textContent     = s.participant_name || '—';
+      document.getElementById('d-group').textContent    = 'Group ' + s.group_code;
+      document.getElementById('d-route').textContent    = 'Route ' + s.route;
+      document.getElementById('d-timeslot').textContent = 'Slot ' + s.timeslot;
+
+      // Trip
+      document.getElementById('d-trip-date').textContent  = s.trip_date || '—';
+      document.getElementById('d-end-time').textContent   = s.trip_end_time || '—';
+      document.getElementById('d-from').textContent       = s.start_point || '—';
+      document.getElementById('d-to').textContent         = s.destination || '—';
+      document.getElementById('d-device').textContent     = s.device || '—';
+      document.getElementById('d-submitted').textContent  = fmtDate(s.submitted_at);
+
+      // Notes
+      if (s.notes) {
+        document.getElementById('d-notes').textContent = s.notes;
+        document.getElementById('notes-card').style.display = '';
+      }
+
+      renderFiles(data.files);
+    });
+}
+
+// ── Init ──────────────────────────────────────────────────────
+fetch('/admin/api/me')
+  .then(function(r) {
+    if (r.status === 401) { window.location.href = '/admin/login.html'; return null; }
+    return r.json();
+  })
+  .then(function(d) {
+    if (!d) return;
+    document.getElementById('admin-user').textContent = d.username;
+    loadDetail();
+  });
+</script>
+</body>
+</html>

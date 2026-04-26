@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Submissions — Admin</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<div class="bg-scene" aria-hidden="true">
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <div class="bg-grid"></div>
+</div>
+
+<!-- Admin navbar -->
+<nav class="navbar">
+  <a href="submissions.html" class="nav-logo">
+    <div class="nav-logo-icon">BX</div>
+    <span>Admin Portal</span>
+  </a>
+  <div class="nav-links">
+    <a href="submissions.html" class="nav-link active">Submissions</a>
+    <a href="signup-requests.html" class="nav-link">Signup Requests</a>
+  </div>
+  <div class="nav-right">
+    <span id="admin-user" class="text-sm text-muted" style="margin-right:8px;"></span>
+    <button class="btn btn-ghost btn-sm" onclick="logout()">Sign Out</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="container" style="padding-top:40px;padding-bottom:60px;">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-24 fade-up" style="flex-wrap:wrap;gap:16px;">
+      <div>
+        <div class="badge badge-indigo mb-8">Admin</div>
+        <h2>Submissions</h2>
+        <p class="text-muted text-sm mt-4" id="result-count">Loading…</p>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-20 fade-up delay-1">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;align-items:end;">
+        <div class="form-group">
+          <label class="form-label">Participant ID</label>
+          <input class="form-input" id="f-participant" placeholder="P-2024-…"
+                 oninput="debounceLoad()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Group</label>
+          <select class="form-select" id="f-group" onchange="loadSubmissions()">
+            <option value="">All groups</option>
+            <option value="A">Group A</option>
+            <option value="B">Group B</option>
+            <option value="C">Group C</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Route</label>
+          <select class="form-select" id="f-route" onchange="loadSubmissions()">
+            <option value="">All routes</option>
+            <option value="1">Route 1</option>
+            <option value="2">Route 2</option>
+            <option value="3">Route 3</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select" id="f-status" onchange="loadSubmissions()">
+            <option value="">All statuses</option>
+            <option value="pending">Pending</option>
+            <option value="reviewed">Reviewed</option>
+            <option value="flagged">Flagged</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date from</label>
+          <input class="form-input" id="f-date-from" type="date" onchange="loadSubmissions()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date to</label>
+          <input class="form-input" id="f-date-to" type="date" onchange="loadSubmissions()">
+        </div>
+        <button class="btn btn-ghost btn-sm" style="align-self:end" onclick="clearFilters()">
+          Clear filters
+        </button>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card fade-up delay-2" style="padding:0;overflow:hidden;">
+      <div style="overflow-x:auto;">
+        <table id="submissions-table" style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border);background:var(--surface2);">
+              <th style="padding:12px 16px;text-align:left;font-size:12px;font-weight:600;color:var(--text-dim);letter-spacing:.4px;text-transform:uppercase;">Reference</th>
+              <th style="padding:12px 16px;text-align:left;font-size:12px;font-weight:600;color:var(--text-dim);letter-spacing:.4px;text-transform:uppercase;">Participant</th>
+              <th style="padding:12px 16px;text-align:left;font-size:12px;font-weight:600;color:var(--text-dim);letter-spacing:.4px;text-transform:uppercase;">Group</th>
+              <th style="padding:12px 16px;text-align:left;font-size:12px;font-weight:600;color:var(--text-dim);letter-spacing:.4px;text-transform:uppercase;">Trip Date</th>
+              <th style="padding:12px 16px;text-align:left;font-size:12px;font-weight:600;color:var(--text-dim);letter-spacing:.4px;text-transform:uppercase;">Files</th>
+              <th style="padding:12px 16px;text-align:left;font-size:12px;font-weight:600;color:var(--text-dim);letter-spacing:.4px;text-transform:uppercase;">Status</th>
+              <th style="padding:12px 16px;text-align:left;font-size:12px;font-weight:600;color:var(--text-dim);letter-spacing:.4px;text-transform:uppercase;">Submitted</th>
+              <th style="padding:12px 16px;text-align:left;font-size:12px;font-weight:600;color:var(--text-dim);letter-spacing:.4px;text-transform:uppercase;"></th>
+            </tr>
+          </thead>
+          <tbody id="submissions-body">
+            <tr><td colspan="8" style="padding:40px;text-align:center;color:var(--text-dim);">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div id="pagination" class="flex items-center justify-between mt-16" style="flex-wrap:wrap;gap:12px;display:none;">
+      <span id="page-info" class="text-sm text-muted"></span>
+      <div class="flex gap-8">
+        <button id="btn-prev" class="btn btn-ghost btn-sm" onclick="changePage(-1)">← Previous</button>
+        <button id="btn-next" class="btn btn-ghost btn-sm" onclick="changePage(1)">Next →</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+var currentPage = 1;
+var totalPages  = 1;
+var debounceTimer;
+
+var STATUS_BADGE = {
+  pending:  'badge-amber',
+  reviewed: 'badge-emerald',
+  flagged:  'badge-rose'
+};
+
+function logout() {
+  fetch('/admin/logout', { method:'POST' })
+    .then(function() { window.location.href = '/admin/login.html'; });
+}
+
+function debounceLoad() {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(function() { currentPage = 1; loadSubmissions(); }, 350);
+}
+
+function clearFilters() {
+  ['f-participant','f-group','f-route','f-status','f-date-from','f-date-to']
+    .forEach(function(id) { document.getElementById(id).value = ''; });
+  currentPage = 1;
+  loadSubmissions();
+}
+
+function changePage(delta) {
+  var next = currentPage + delta;
+  if (next < 1 || next > totalPages) return;
+  currentPage = next;
+  loadSubmissions();
+}
+
+function buildQuery() {
+  var params = new URLSearchParams({ page: currentPage, limit: 20 });
+  var p = document.getElementById('f-participant').value.trim();
+  var g = document.getElementById('f-group').value;
+  var r = document.getElementById('f-route').value;
+  var s = document.getElementById('f-status').value;
+  var df = document.getElementById('f-date-from').value;
+  var dt = document.getElementById('f-date-to').value;
+  if (p)  params.set('participant', p);
+  if (g)  params.set('group', g);
+  if (r)  params.set('route', r);
+  if (s)  params.set('status', s);
+  if (df) params.set('date_from', df);
+  if (dt) params.set('date_to', dt);
+  return params.toString();
+}
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  return iso.replace('T',' ').slice(0,16);
+}
+
+function loadSubmissions() {
+  fetch('/admin/api/submissions?' + buildQuery())
+    .then(function(r) {
+      if (r.status === 401) { window.location.href = '/admin/login.html'; return null; }
+      return r.json();
+    })
+    .then(function(data) {
+      if (!data) return;
+      var pg = data.pagination;
+      currentPage = pg.page;
+      totalPages  = pg.pages;
+
+      document.getElementById('result-count').textContent =
+        pg.total + ' submission' + (pg.total !== 1 ? 's' : '') + ' found';
+
+      var tbody = document.getElementById('submissions-body');
+      if (data.submissions.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="padding:40px;text-align:center;color:var(--text-dim);">No submissions match the current filters.</td></tr>';
+      } else {
+        tbody.innerHTML = data.submissions.map(function(s) {
+          var badgeClass = STATUS_BADGE[s.status] || 'badge-indigo';
+          return '<tr style="border-bottom:1px solid var(--border);transition:background .15s;" ' +
+              'onmouseover="this.style.background=\'var(--surface2)\'" ' +
+              'onmouseout="this.style.background=\'\'">' +
+            '<td style="padding:12px 16px;"><code style="color:var(--indigo-l);font-size:12px;">' + escHtml(s.reference_number) + '</code></td>' +
+            '<td style="padding:12px 16px;"><div style="font-size:13px;font-weight:500;">' + escHtml(s.participant_code) + '</div>' +
+              '<div style="font-size:11px;color:var(--text-dim);">' + escHtml(s.participant_name || '') + '</div></td>' +
+            '<td style="padding:12px 16px;"><span class="badge badge-indigo">Group ' + escHtml(s.group_code) + '</span></td>' +
+            '<td style="padding:12px 16px;font-size:13px;color:var(--text-muted);">' + escHtml(s.trip_date || '—') + '</td>' +
+            '<td style="padding:12px 16px;font-size:13px;color:var(--text-muted);">' + s.file_count + ' file' + (s.file_count !== 1 ? 's' : '') + '</td>' +
+            '<td style="padding:12px 16px;"><span class="badge ' + badgeClass + '">' + escHtml(s.status) + '</span></td>' +
+            '<td style="padding:12px 16px;font-size:12px;color:var(--text-dim);">' + fmtDate(s.submitted_at) + '</td>' +
+            '<td style="padding:12px 16px;">' +
+              '<a href="submission.html?id=' + s.id + '" class="btn btn-secondary btn-xs">View →</a>' +
+            '</td>' +
+          '</tr>';
+        }).join('');
+      }
+
+      var pager = document.getElementById('pagination');
+      if (pg.pages > 1) {
+        pager.style.display = '';
+        document.getElementById('page-info').textContent = 'Page ' + pg.page + ' of ' + pg.pages;
+        document.getElementById('btn-prev').disabled = pg.page <= 1;
+        document.getElementById('btn-next').disabled = pg.page >= pg.pages;
+      } else {
+        pager.style.display = 'none';
+      }
+    })
+    .catch(function(err) {
+      document.getElementById('submissions-body').innerHTML =
+        '<tr><td colspan="8" style="padding:40px;text-align:center;color:var(--rose);">' +
+        escHtml(err.message || 'Failed to load submissions.') +
+        '</td></tr>';
+    });
+}
+
+function escHtml(s) {
+  return String(s || '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+fetch('/admin/api/me')
+  .then(function(r){
+    if (!r.ok) throw new Error('unauthorized');
+    return r.json();
+  })
+  .then(function(me){
+    document.getElementById('admin-user').textContent = me.username;
+    loadSubmissions();
+  })
+  .catch(function(){
+    window.location.href = '/admin/login.html';
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Resources — BarryXI Research</title>
+<link rel="stylesheet" href="style.css">
+<script src="components/auth.js"></script>
+</head>
+<body>
+
+<div class="bg-scene" aria-hidden="true">
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <div class="bg-orb bg-orb-3"></div>
+  <div class="bg-grid"></div>
+</div>
+
+<div id="navbar-placeholder"></div>
+
+<div class="page">
+  <div class="container" style="padding-top:40px;padding-bottom:60px;">
+
+    <div class="section-header fade-up">
+      <div class="badge badge-indigo">Resources</div>
+      <h2>Resource Library</h2>
+      <p>Download handbooks, guides, and reference materials for the study.</p>
+    </div>
+
+    <!-- File naming reminder -->
+    <div class="alert alert-warn mb-28 fade-up delay-1">
+      <span class="alert-icon">⚠️</span>
+      <div>
+        <strong>Required file naming format:</strong>
+        <code style="margin-left:8px;background:rgba(245,158,11,.1);padding:2px 8px;border-radius:4px;font-size:12px;">
+          [Group]_[ParticipantID]_[StepNumber]_[YYYYMMDD].[ext]
+        </code>
+        <div class="text-xs mt-4" style="opacity:.8">Example: <code>A_P042_Step03_20240315.png</code></div>
+      </div>
+    </div>
+
+    <!-- Search + filter -->
+    <div class="flex items-center justify-between mb-24 gap-16 fade-up delay-2" style="flex-wrap:wrap;">
+      <div class="flex flex-wrap gap-6" id="filter-bar">
+        <button class="filter-tab active" onclick="setFilter('All',this)">All</button>
+        <button class="filter-tab" onclick="setFilter('Documentation',this)">Documentation</button>
+        <button class="filter-tab" onclick="setFilter('Guide',this)">Guides</button>
+        <button class="filter-tab" onclick="setFilter('Rules',this)">Rules</button>
+        <button class="filter-tab" onclick="setFilter('Maps',this)">Maps</button>
+        <button class="filter-tab" onclick="setFilter('Examples',this)">Examples</button>
+        <button class="filter-tab" onclick="setFilter('Forms',this)">Forms</button>
+      </div>
+      <div class="search-wrap" style="max-width:240px;width:100%;">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="form-input search-input" id="search-input" placeholder="Search resources…" oninput="renderResources()">
+      </div>
+    </div>
+
+    <!-- Resource grid -->
+    <div class="grid grid-3" id="resource-grid"></div>
+
+  </div>
+</div>
+
+<script src="components/navbar.js"></script>
+<script>RCT.init();</script>
+<script>
+var resources = [
+  {title:'Participant Handbook',    type:'Documentation', cat:'Documentation', size:'2.4 MB', icon:'📖', desc:'Complete study overview, protocols, and participant rights.'},
+  {title:'Screenshot Guide',        type:'Guide',         cat:'Guide',          size:'1.1 MB', icon:'📸', desc:'Visual walkthrough of every required screenshot step.'},
+  {title:'File Naming Rules',       type:'Rules',         cat:'Rules',          size:'0.5 MB', icon:'📋', desc:'Mandatory file naming convention with examples.'},
+  {title:'Route Map — Route 1',     type:'Map',           cat:'Maps',           size:'2.8 MB', icon:'🗺️', desc:'Northern District: University → Central Station.'},
+  {title:'Route Map — Route 2',     type:'Map',           cat:'Maps',           size:'3.1 MB', icon:'🗺️', desc:'Eastern Corridor: Tech Park → Waterfront.'},
+  {title:'Route Map — Route 3',     type:'Map',           cat:'Maps',           size:'3.2 MB', icon:'🗺️', desc:'City Centre Loop: Market Square → Old Town.'},
+  {title:'Example Screenshots Pack',type:'Examples',      cat:'Examples',       size:'15.6 MB',icon:'🖼️', desc:'Reference screenshots for every capture step.'},
+  {title:'Uber App Setup Guide',    type:'Guide',         cat:'Guide',          size:'1.8 MB', icon:'📱', desc:'How to configure Uber for clean, unobstructed captures.'},
+  {title:'FAQ Document',            type:'Documentation', cat:'Documentation',  size:'0.9 MB', icon:'❓', desc:'Answers to the most common participant questions.'},
+  {title:'Consent Form Template',   type:'Form',          cat:'Forms',          size:'0.3 MB', icon:'📄', desc:'Downloadable consent form for your records.'}
+];
+
+var activeFilter = 'All';
+
+function setFilter(cat, btn) {
+  activeFilter = cat;
+  document.querySelectorAll('.filter-tab').forEach(function(t){ t.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  renderResources();
+}
+
+function renderResources() {
+  var q = (document.getElementById('search-input').value || '').toLowerCase();
+  var filtered = resources.filter(function(r) {
+    var matchCat = activeFilter === 'All' || r.cat === activeFilter;
+    var matchQ   = !q || r.title.toLowerCase().includes(q) || r.desc.toLowerCase().includes(q);
+    return matchCat && matchQ;
+  });
+
+  var el = document.getElementById('resource-grid');
+  if (filtered.length === 0) {
+    el.innerHTML = '<div class="card text-center" style="grid-column:1/-1;padding:48px"><div style="font-size:32px;margin-bottom:12px">📭</div><p class="text-muted">No resources match your search.</p></div>';
+    return;
+  }
+
+  var catBadge = {
+    'Documentation':'indigo','Guide':'cyan','Rules':'amber',
+    'Maps':'emerald','Examples':'indigo','Forms':'rose'
+  };
+
+  el.innerHTML = filtered.map(function(r, i) {
+    var color = catBadge[r.cat] || 'indigo';
+    return '<div class="card card-hover fade-up" style="animation-delay:' + (i * 0.06) + 's">' +
+      '<div class="flex items-start justify-between mb-12">' +
+        '<div style="font-size:28px">' + r.icon + '</div>' +
+        '<span class="badge badge-' + color + '">' + r.type + '</span>' +
+      '</div>' +
+      '<h3 style="font-size:14px;margin-bottom:8px">' + r.title + '</h3>' +
+      '<p class="text-sm text-muted mb-16">' + r.desc + '</p>' +
+      '<div class="flex items-center justify-between mt-auto">' +
+        '<span class="text-xs text-dim">' + r.size + '</span>' +
+        '<button class="btn btn-secondary btn-xs">' +
+          '<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>' +
+          'Download' +
+        '</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+renderResources();
+</script>
+</body>
+</html>

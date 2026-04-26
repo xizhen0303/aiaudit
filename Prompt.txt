@@ -1,0 +1,891 @@
+● Starting with scaffold files.
+
+● Write(experiment-portal\package.json)
+  ⎿  Wrote 29 lines to experiment-portal\package.json
+       1 {
+       2   "name": "experiment-portal",
+       3   "version": "0.1.0",
+       4   "private": true,
+       5   "scripts": {
+       6     "dev": "next dev",
+       7     "build": "next build",
+       8     "start": "next start",
+       9     "lint": "next lint"
+      10   },
+     … +19 lines (ctrl+o to expand)
+
+● Write(experiment-portal\tailwind.config.ts)
+  ⎿  Wrote 34 lines to experiment-portal\tailwind.config.ts
+       1 import type { Config } from 'tailwindcss'
+       2
+       3 const config: Config = {
+       4   content: [
+       5     './pages/**/*.{js,ts,jsx,tsx,mdx}',
+       6     './components/**/*.{js,ts,jsx,tsx,mdx}',
+       7     './app/**/*.{js,ts,jsx,tsx,mdx}',
+       8   ],
+       9   theme: {
+      10     extend: {
+     … +24 lines (ctrl+o to expand)
+
+● Write(experiment-portal\postcss.config.js)
+  ⎿  Wrote 6 lines to experiment-portal\postcss.config.js
+      1 module.exports = {
+      2   plugins: {
+      3     tailwindcss: {},
+      4     autoprefixer: {},
+      5   },
+      6 }
+
+● Write(experiment-portal\tsconfig.json)
+  ⎿  Wrote 21 lines to experiment-portal\tsconfig.json
+       1 {
+       2   "compilerOptions": {
+       3     "target": "es5",
+       4     "lib": ["dom", "dom.iterable", "esnext"],
+       5     "allowJs": true,
+       6     "skipLibCheck": true,
+       7     "strict": true,
+       8     "noEmit": true,
+       9     "esModuleInterop": true,
+      10     "module": "esnext",
+     … +11 lines (ctrl+o to expand)
+
+● Write(experiment-portal\app\globals.css)
+  ⎿  Wrote 57 lines to experiment-portal\app\globals.css
+       1 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+       2
+       3 @tailwind base;
+       4 @tailwind components;
+       5 @tailwind utilities;
+       6
+       7 :root {
+       8   --bg: #080810;
+       9   --surface: #0d0d1a;
+      10   --border: rgba(255,255,255,0.06);
+     … +47 lines (ctrl+o to expand)
+
+● Write(experiment-portal\app\layout.tsx)
+  ⎿  Wrote 19 lines to experiment-portal\app\layout.tsx
+       1 import type { Metadata } from 'next'
+       2 import './globals.css'
+       3 import { Navbar } from '@/components/layout/Navbar'
+       4
+       5 export const metadata: Metadata = {
+       6   title: 'ExperimentOS — Participant Portal',
+       7   description: 'AI-powered experiment training and submission portal',
+       8 }
+       9
+      10 export default function RootLayout({ children }: { children: React.ReactNode }) {
+     … +9 lines (ctrl+o to expand)
+
+● Write(experiment-portal\lib\utils.ts)
+  ⎿  Wrote 6 lines to experiment-portal\lib\utils.ts
+      1 import { type ClassValue, clsx } from 'clsx'
+      2 import { twMerge } from 'tailwind-merge'
+      3
+      4 export function cn(...inputs: ClassValue[]) {
+      5   return twMerge(clsx(inputs))
+      6 }
+
+● Write(experiment-portal\lib\mock-data.ts)
+  ⎿  Wrote 125 lines to experiment-portal\lib\mock-data.ts
+       1 // ─── Participant ────────────────────────────────────────────────────────────
+       2 export const participant = {
+       3   name: 'Alex Chen',
+       4   id: 'P-2024-042',
+       5   group: 'Group A',
+       6   route: 'Route 3 — City Centre Loop',
+       7   userType: 'Standard User',
+       8   timeslot: 'Slot 2 — 10:00 AM – 12:00 PM',
+       9   trainingProgress: 30,
+      10   submissionStatus: 'in-progress' as const,
+     … +115 lines (ctrl+o to expand)
+
+● Write(experiment-portal\components\layout\Navbar.tsx)
+  ⎿  Wrote 120 lines to experiment-portal\components\layout\Navbar.tsx
+      1 'use client'
+      2 import Link from 'next/link'
+      3 import { usePathname } from 'next/navigation'
+      4 import { motion, AnimatePresence } from 'framer-motion'
+      5 import { useState } from 'react'
+      6 import {
+      7   Zap, BookOpen, LayoutDashboard, FolderOpen,
+      8   Upload, Calendar, HelpCircle, Menu, X,
+      9 } from 'lucide-react'
+     … +111 lines (ctrl+o to expand)
+
+● Write(experiment-portal\components\ui\FloatingBackground.tsx)
+  ⎿  Wrote 47 lines to experiment-portal\components\ui\FloatingBackground.tsx
+       1 'use client'
+       2 import { motion } from 'framer-motion'
+       3
+       4 export function FloatingBackground() {
+       5   return (
+       6     <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+       7       {/* Base */}
+       8       <div className="absolute inset-0 bg-[#080810]" />
+       9
+      10       {/* Grid */}
+     … +37 lines (ctrl+o to expand)
+
+● Write(experiment-portal\components\ui\GlowCard.tsx)
+  ⎿  Wrote 38 lines to experiment-portal\components\ui\GlowCard.tsx
+       1 'use client'
+       2 import { motion } from 'framer-motion'
+       3 import { cn } from '@/lib/utils'
+       4
+       5 interface GlowCardProps {
+       6   children: React.ReactNode
+       7   className?: string
+       8   glow?: 'indigo' | 'cyan' | 'purple' | 'emerald' | 'none'
+       9   hover?: boolean
+      10   delay?: number
+     … +28 lines (ctrl+o to expand)
+
+● Write(experiment-portal\components\ui\StatusBadge.tsx)
+  ⎿  Wrote 22 lines to experiment-portal\components\ui\StatusBadge.tsx
+       1 import { cn } from '@/lib/utils'
+       2
+       3 type Status = 'completed' | 'in-progress' | 'pending' | 'active' | 'upcoming' | 'overdue'
+       4
+       5 const cfg: Record<Status, { label: string; cls: string }> = {
+       6   completed:   { label: 'Completed',   cls: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' },
+       7   'in-progress':{ label: 'In Progress', cls: 'bg-indigo-500/15  text-indigo-400  border-indigo-500/30'  },
+       8   pending:     { label: 'Pending',     cls: 'bg-slate-500/15   text-slate-400   border-slate-500/30'   },
+       9   active:      { label: 'Active',      cls: 'bg-cyan-500/15    text-cyan-400    border-cyan-500/30'    },
+      10   upcoming:    { label: 'Upcoming',    cls: 'bg-amber-500/15   text-amber-400   border-amber-500/30'   },
+     … +12 lines (ctrl+o to expand)
+
+● Write(experiment-portal\components\ui\WorkflowSteps.tsx)
+  ⎿  Wrote 46 lines to experiment-portal\components\ui\WorkflowSteps.tsx
+       1 'use client'
+       2 import { motion } from 'framer-motion'
+       3 import { BookOpen, ClipboardList, Navigation, Upload } from 'lucide-react'
+       4
+       5 const steps = [
+       6   { icon: BookOpen,      label: 'Learn',    desc: 'Complete all training modules',  color: 'from-indigo-500 to-purple-500',  shadow: 'shadow-indigo-500/25' },
+       7   { icon: ClipboardList, label: 'Prepare',  desc: 'Review your group assignment',   color: 'from-purple-500 to-pink-500',    shadow: 'shadow-purple-500/25' },
+       8   { icon: Navigation,    label: 'Collect',  desc: 'Follow the trip protocol',       color: 'from-cyan-500 to-blue-500',      shadow: 'shadow-cyan-500/25'   },
+       9   { icon: Upload,        label: 'Upload',   desc: 'Submit your files & data',       color: 'from-emerald-500 to-cyan-500',   shadow: 'shadow-emerald-500/25'},
+      10 ]
+     … +36 lines (ctrl+o to expand)
+
+● Now the Home page:
+
+● Write(experiment-portal\app\page.tsx)
+  ⎿  Wrote 194 lines to experiment-portal\app\page.tsx
+       1 'use client'
+       2 import Link from 'next/link'
+       3 import { motion } from 'framer-motion'
+       4 import { FloatingBackground } from '@/components/ui/FloatingBackground'
+       5 import { WorkflowSteps } from '@/components/ui/WorkflowSteps'
+       6 import { GlowCard } from '@/components/ui/GlowCard'
+       7 import {
+       8   ArrowRight, BookOpen, LayoutDashboard, Upload,
+       9   Shield, Clock, Map, CheckCircle2, Zap, Users,
+      10 } from 'lucide-react'
+     … +188 lines (ctrl+o to expand)
+
+● Now the training components:
+
+● Write(experiment-portal\components\training\TrainingSidebar.tsx)
+  ⎿  Wrote 72 lines to experiment-portal\components\training\TrainingSidebar.tsx
+      1 'use client'
+      2 import { motion } from 'framer-motion'
+      3 import { CheckCircle2, Circle, BookOpen, Map, Shield, Clock, CheckSquare, Navigation, Upload, AlertCircle, ShieldAlert, Phone } from 'lucide-react'
+      4 import { trainingModules } from '@/lib/mock-data'
+      5 import { cn } from '@/lib/utils'
+      6
+      7 const iconMap: Record<string, React.ElementType> = {
+      8   BookOpen, Map, Shield, Clock, CheckSquare, Navigation, Upload, AlertCircle, ShieldAlert, Phone,
+      9 }
+     … +62 lines (ctrl+o to expand)
+
+● Write(experiment-portal\components\training\TutorialStepCard.tsx)
+  ⎿  Wrote 82 lines to experiment-portal\components\training\TutorialStepCard.tsx
+       1 'use client'
+       2 import { useState } from 'react'
+       3 import { motion, AnimatePresence } from 'framer-motion'
+       4 import { CheckCircle2, Camera, Smartphone, ChevronDown } from 'lucide-react'
+       5 import { duringTripSteps } from '@/lib/mock-data'
+       6 import { cn } from '@/lib/utils'
+       7
+       8 interface TripStepCardProps {
+       9   step: typeof duringTripSteps[0]
+      10   index: number
+     … +72 lines (ctrl+o to expand)
+
+● Write(experiment-portal\components\training\ChecklistCard.tsx)
+  ⎿  Wrote 56 lines to experiment-portal\components\training\ChecklistCard.tsx
+       1 'use client'
+       2 import { useState } from 'react'
+       3 import { motion } from 'framer-motion'
+       4 import { CheckSquare, Square } from 'lucide-react'
+       5 import { cn } from '@/lib/utils'
+       6
+       7 interface ChecklistCardProps {
+       8   title: string
+       9   items: string[]
+      10   color?: 'indigo' | 'cyan' | 'emerald'
+     … +46 lines (ctrl+o to expand)
+
+● Now the training page — the most complex one. I'll write it in two chunks:
+
+● Write(experiment-portal\app\training\page.tsx)
+  ⎿  Wrote 325 lines to experiment-portal\app\training\page.tsx
+       1 'use client'
+       2 import { useState } from 'react'
+       3 import { motion, AnimatePresence } from 'framer-motion'
+       4 import { FloatingBackground } from '@/components/ui/FloatingBackground'
+       5 import { TrainingSidebar } from '@/components/training/TrainingSidebar'
+       6 import { DuringTripSteps } from '@/components/training/TutorialStepCard'
+       7 import { ChecklistCard } from '@/components/training/ChecklistCard'
+       8 import { preTripChecklist, postTripChecklist, participant } from '@/lib/mock-data'
+       9 import {
+      10   BookOpen, Map, Shield, Clock, CheckSquare, Navigation,
+     … +322 lines (ctrl+o to expand)
+
+● Now the Dashboard page:
+
+● Write(experiment-portal\app\dashboard\page.tsx)
+  ⎿  Wrote 166 lines to experiment-portal\app\dashboard\page.tsx
+       1 'use client'
+       2 import Link from 'next/link'
+       3 import { motion } from 'framer-motion'
+       4 import { FloatingBackground } from '@/components/ui/FloatingBackground'
+       5 import { GlowCard } from '@/components/ui/GlowCard'
+       6 import { StatusBadge } from '@/components/ui/StatusBadge'
+       7 import { ChecklistCard } from '@/components/training/ChecklistCard'
+       8 import { participant, preTripChecklist, postTripChecklist, trainingModules } from '@/lib/mock-data'
+       9 import {
+      10   BookOpen, Upload, Calendar, Map, User, Clock,
+     … +156 lines (ctrl+o to expand)
+
+● Write(experiment-portal\app\resources\page.tsx)
+  ⎿  Wrote 125 lines to experiment-portal\app\resources\page.tsx
+       1 'use client'
+       2 import { useState } from 'react'
+       3 import { motion } from 'framer-motion'
+       4 import { FloatingBackground } from '@/components/ui/FloatingBackground'
+       5 import { GlowCard } from '@/components/ui/GlowCard'
+       6 import { resources } from '@/lib/mock-data'
+       7 import { Search, Download, FileText, Image, Archive, File, Tag, Map, HelpCircle, BookOpen, Smartphone } from 'lucide-react'
+       8
+       9 const iconMap: Record<string, React.ElementType> = {
+      10   PDF: FileText, PNG: Image, ZIP: Archive, DOCX: File,
+     … +118 lines (ctrl+o to expand)
+
+● Now the Upload page — high priority:
+
+● Write(experiment-portal\app\upload\page.tsx)
+  ⎿  Wrote 282 lines to experiment-portal\app\upload\page.tsx
+       1 'use client'
+       2 import { useState, useRef, useCallback } from 'react'
+       3 import { motion, AnimatePresence } from 'framer-motion'
+       4 import { FloatingBackground } from '@/components/ui/FloatingBackground'
+       5 import { GlowCard } from '@/components/ui/GlowCard'
+       6 import { StatusBadge } from '@/components/ui/StatusBadge'
+       7 import {
+       8   Upload, X, CheckCircle2, AlertCircle, FileImage,
+       9   Film, File, Tag, Info, CloudUpload,
+      10 } from 'lucide-react'
+     … +276 lines (ctrl+o to expand)
+
+● Write(experiment-portal\app\schedule\page.tsx)
+  ⎿  Wrote 134 lines to experiment-portal\app\schedule\page.tsx
+       1 'use client'
+       2 import { motion } from 'framer-motion'
+       3 import { FloatingBackground } from '@/components/ui/FloatingBackground'
+       4 import { GlowCard } from '@/components/ui/GlowCard'
+       5 import { StatusBadge } from '@/components/ui/StatusBadge'
+       6 import { schedule, participant } from '@/lib/mock-data'
+       7 import { Clock, Users, Map, CheckCircle2, AlertCircle, Calendar } from 'lucide-react'
+       8
+       9 const statusIcon = {
+      10   completed: CheckCircle2,
+     … +125 lines (ctrl+o to expand)
+
+● Write(experiment-portal\app\help\page.tsx)
+  ⎿  Wrote 175 lines to experiment-portal\app\help\page.tsx
+       1 'use client'
+       2 import { useState } from 'react'
+       3 import { motion, AnimatePresence } from 'framer-motion'
+       4 import { FloatingBackground } from '@/components/ui/FloatingBackground'
+       5 import { GlowCard } from '@/components/ui/GlowCard'
+       6 import { faqs, contacts } from '@/lib/mock-data'
+       7 import {
+       8   ChevronDown, Mail, Phone, ShieldAlert, AlertTriangle,
+       9   HelpCircle, Upload, Smartphone, MessageSquare,
+      10 } from 'lucide-react'
+     … +166 lines (ctrl+o to expand)
+
+● All files are written. Let me verify the structure:
+
+  Searched for 1 pattern (ctrl+o to expand)
+
+● 23 files, all present. Here's the complete picture:
+
+  ---
+  ExperimentOS — Prototype Complete
+
+  To run it:
+  cd experiment-portal
+  npm install
+  npm run dev
+
+  ---
+  What was built
+
+  23 files across a full Next.js App Router project.
+
+  Pages (7):
+
+  ┌────────────┬──────────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │   Route    │                                                 Page                                                 │
+  ├────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ /          │ Landing — hero, workflow steps, feature cards, stats                                                 │
+  ├────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ /training  │ Interactive training — sidebar progress, 10 modules, animated step-by-step trip guide with mark-done │
+  ├────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ /dashboard │ Participant overview — assignment cards, training progress bar, checklists, recent uploads           │
+  ├────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ /resources │ Searchable/filterable resource library with download cards                                           │
+  ├────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ /upload    │ Drag-and-drop upload with simulated progress, metadata form, success state                           │
+  ├────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ /schedule  │ Timeline view with your slot highlighted, route reference cards                                      │
+  ├────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ /help      │ FAQ accordion, troubleshooting cards, contact cards, emergency block, incident reporting             │
+  └────────────┴──────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+  Reusable components (9):
+  FloatingBackground · GlowCard · StatusBadge · WorkflowSteps · Navbar · TrainingSidebar · TutorialStepCard (DuringTripSteps) · ChecklistCard
+
+  Design system: dark #080810 base, indigo/cyan gradient accents, glassmorphism cards, animated glow orbs, grid overlay, Framer Motion transitions throughout, fully responsive.
+
+✻ Churned for 10m 5s
+
+※ recap: Built a full Next.js frontend prototype for the experiment portal with 7 pages, 9 reusable components, and mock data. Run npm install then npm run dev inside the experiment-portal folder to start it.
+  (disable recaps in /config)
+
+> where did you save the file, show me
+
+  Listed 1 directory (ctrl+o to expand)
+
+● The project was saved at:
+
+  C:\Users\25019142r\experiment-portal\
+
+  Full structure:
+  experiment-portal/
+  ├── app/
+  │   ├── globals.css
+  │   ├── layout.tsx
+  │   ├── page.tsx              ← Home
+  │   ├── training/page.tsx
+  │   ├── dashboard/page.tsx
+  │   ├── resources/page.tsx
+  │   ├── upload/page.tsx
+  │   ├── schedule/page.tsx
+  │   └── help/page.tsx
+  ├── components/
+  │   ├── layout/Navbar.tsx
+  │   ├── ui/
+  │   │   ├── FloatingBackground.tsx
+  │   │   ├── GlowCard.tsx
+  │   │   ├── StatusBadge.tsx
+  │   │   └── WorkflowSteps.tsx
+  │   └── training/
+  │       ├── TrainingSidebar.tsx
+  │       ├── TutorialStepCard.tsx
+  │       └── ChecklistCard.tsx
+  ├── lib/
+  │   ├── mock-data.ts
+  │   └── utils.ts
+  ├── package.json
+  ├── tailwind.config.ts
+  ├── postcss.config.js
+  └── tsconfig.json
+
+  To run it, open a terminal and:
+  cd C:\Users\25019142r\experiment-portal
+  npm install
+  npm run dev
+
+  Then open http://localhost:3000.
+
+> you write a app? I just want a website
+
+● Fair point. You want plain HTML/CSS/JS files you can just open in a browser — no npm install, no terminal, no framework.
+
+  Should I rebuild it as:
+
+● User answered Claude's questions:
+  ⎿  · How do you want the website structured? → Multiple HTML pages
+
+● Write(experiment-website\style.css)
+  ⎿  Wrote 17 lines to experiment-website\style.css
+      1 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+      2
+      3 :root { --bg:#080810; --surface:#0d0d1a; --border:rgba(255,255,255,0.06); --indigo:#6366f1; --cyan:#22d3ee; }
+      4 *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+      5 html { scroll-behavior:smooth; }
+      6 body { background:var(--bg); color:#f1f5f9; font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased; min-height:100vh; }
+      7 ::-webkit-scrollbar { width:6px; }
+      8 ::-webkit-scrollbar-track { background:var(--bg); }
+      9 ::-webkit-scrollbar-thumb { background:rgba(99,102,241,0.4); border-radius:3px; }
+     … +8 lines (ctrl+o to expand)
+
+● Update(experiment-website\style.css)
+  ⎿  Added 21 lines
+      15  .orb-1 { width:600px; height:600px; top:-200px; left:-200px; background:radial-gradient(circle,rgba(99,102,241,0.12) 0%,transparent 70%); }
+      16  .orb-2 { width:500px; height:500px; bottom:-200px; right:-200px; background:radial-gradient(circle,rgba(34,211,238,0.08) 0%,transparent 70%); animation-delay:-6s; animation-duration:15s; }
+      17  @keyframes float-orb { 0%,100%{transform:translate(0,0)} 33%{transform:translate(30px,-20px)} 66%{transform:translate(-20px,30px)} }
+      18 +
+      19 +/* Navbar */
+      20 +.navbar { position:fixed; top:0; left:0; right:0; z-index:100; height:64px; background:rgba(8,8,16,0.85); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); display:flex; align
+         +-items:center; }
+      21 +.nav-inner { max-width:1280px; margin:0 auto; padding:0 24px; width:100%; display:flex; align-items:center; justify-content:space-between; }
+      22 +.nav-logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
+      23 +.nav-logo-icon { width:32px; height:32px; border-radius:8px; background:linear-gradient(135deg,#6366f1,#22d3ee); display:flex; align-items:center; justify-content:center; font-size:15px; box-s
+         +hadow:0 4px 16px rgba(99,102,241,0.3); }
+      24 +.nav-logo-text { font-weight:600; color:white; font-size:15px; }
+      25 +.nav-links { display:flex; align-items:center; gap:2px; }
+      26 +.nav-link { display:flex; align-items:center; gap:6px; padding:6px 12px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:500; color:#94a3b8; transition:all 0.2s; border:1p
+         +x solid transparent; }
+      27 +.nav-link:hover { color:white; background:rgba(255,255,255,0.05); }
+      28 +.nav-link.active { color:#a5b4fc; background:rgba(99,102,241,0.15); border-color:rgba(99,102,241,0.25); }
+      29 +.nav-avatar { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#a855f7); display:flex; align-items:center; justify-content:center; font-size:11px; font-wei
+         +ght:700; color:white; flex-shrink:0; }
+      30 +.nav-user { display:flex; align-items:center; gap:8px; padding:6px 12px; border-radius:8px; background:rgba(255,255,255,0.04); border:1px solid var(--border); }
+      31 +.nav-user span { font-size:13px; color:#cbd5e1; font-weight:500; }
+      32 +
+      33 +/* Cards */
+      34 +.card { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:12px; transition:all 0.3s; }
+      35 +.card:hover { border-color:rgba(99,102,241,0.25); box-shadow:0 0 30px rgba(99,102,241,0.1); transform:translateY(-2px); }
+      36 +.card-cyan:hover { border-color:rgba(34,211,238,0.25); box-shadow:0 0 30px rgba(34,211,238,0.1); }
+      37 +.card-emerald:hover { border-color:rgba(16,185,129,0.25); box-shadow:0 0 30px rgba(16,185,129,0.1); }
+      38 +.card-flat { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:12px; }
+
+● Update(experiment-website\style.css)
+  ⎿  Added 69 lines
+       36  .card-cyan:hover { border-color:rgba(34,211,238,0.25); box-shadow:0 0 30px rgba(34,211,238,0.1); }
+       37  .card-emerald:hover { border-color:rgba(16,185,129,0.25); box-shadow:0 0 30px rgba(16,185,129,0.1); }
+       38  .card-flat { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:12px; }
+       39 +
+       40 +/* Buttons */
+       41 +.btn-primary { display:inline-flex; align-items:center; gap:8px; padding:12px 24px; border-radius:12px; background:linear-gradient(135deg,#6366f1,#22d3ee); color:white; font-weight:600; font-
+          +size:14px; border:none; cursor:pointer; text-decoration:none; transition:all 0.3s; box-shadow:0 8px 32px rgba(99,102,241,0.25); }
+       42 +.btn-primary:hover { box-shadow:0 8px 40px rgba(99,102,241,0.4); transform:translateY(-2px); }
+       43 +.btn-secondary { display:inline-flex; align-items:center; gap:8px; padding:12px 24px; border-radius:12px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); color:#cbd
+          +5e1; font-weight:600; font-size:14px; cursor:pointer; text-decoration:none; transition:all 0.2s; }
+       44 +.btn-secondary:hover { background:rgba(255,255,255,0.07); color:white; }
+       45 +.btn-sm { padding:6px 14px !important; font-size:12px !important; border-radius:8px !important; }
+       46 +.btn-ghost { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:8px; background:none; border:1px solid rgba(255,255,255,0.08); color:#94a3b8; font-size:13px; fo
+          +nt-weight:500; cursor:pointer; text-decoration:none; transition:all 0.2s; }
+       47 +.btn-ghost:hover { color:white; border-color:rgba(255,255,255,0.2); background:rgba(255,255,255,0.04); }
+       48 +
+       49 +/* Badges */
+       50 +.badge { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:500; border:1px solid; }
+       51 +.badge::before { content:''; width:5px; height:5px; border-radius:50%; background:currentColor; flex-shrink:0; }
+       52 +.badge-completed { background:rgba(16,185,129,0.12); color:#34d399; border-color:rgba(16,185,129,0.25); }
+       53 +.badge-active { background:rgba(34,211,238,0.12); color:#22d3ee; border-color:rgba(34,211,238,0.25); }
+       54 +.badge-pending { background:rgba(100,116,139,0.12); color:#94a3b8; border-color:rgba(100,116,139,0.25); }
+       55 +.badge-upcoming { background:rgba(245,158,11,0.12); color:#fbbf24; border-color:rgba(245,158,11,0.25); }
+       56 +.badge-inprogress { background:rgba(99,102,241,0.12); color:#818cf8; border-color:rgba(99,102,241,0.25); }
+       57 +
+       58 +/* Progress */
+       59 +.progress-bar { height:6px; border-radius:999px; background:rgba(255,255,255,0.06); overflow:hidden; }
+       60 +.progress-fill { height:100%; border-radius:999px; background:linear-gradient(90deg,#6366f1,#22d3ee); transition:width 1.2s ease; }
+       61 +
+       62 +/* Text gradient */
+       63 +.text-gradient { background:linear-gradient(135deg,#818cf8,#22d3ee); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+       64 +
+       65 +/* Forms */
+       66 +.form-input { width:100%; padding:10px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.04); color:#e2e8f0; font-size:13px; outline:none; transi
+          +tion:border-color 0.2s; font-family:inherit; }
+       67 +.form-input:focus { border-color:rgba(99,102,241,0.4); background:rgba(255,255,255,0.06); }
+       68 +.form-input::placeholder { color:#475569; }
+       69 +.form-label { display:block; font-size:11px; font-weight:500; color:#64748b; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.05em; }
+       70 +select.form-input option { background:#0d0d1a; }
+       71 +
+       72 +/* Dropzone */
+       73 +.dropzone { border:2px dashed rgba(255,255,255,0.1); border-radius:16px; padding:48px 24px; text-align:center; cursor:pointer; transition:all 0.3s; }
+       74 +.dropzone:hover,.dropzone.dragging { border-color:rgba(99,102,241,0.5); background:rgba(99,102,241,0.05); }
+       75 +
+       76 +/* FAQ */
+       77 +.faq-item { border:1px solid rgba(255,255,255,0.06); border-radius:10px; overflow:hidden; margin-bottom:8px; }
+       78 +.faq-q { width:100%; display:flex; justify-content:space-between; align-items:center; gap:12px; padding:14px 16px; background:none; border:none; color:#e2e8f0; font-size:13px; font-weight:500
+          +; cursor:pointer; text-align:left; transition:background 0.2s; font-family:inherit; }
+       79 +.faq-q:hover { background:rgba(255,255,255,0.03); }
+       80 +.faq-a { padding:0 16px; max-height:0; overflow:hidden; transition:max-height 0.3s ease,padding 0.3s; font-size:13px; color:#94a3b8; line-height:1.6; }
+       81 +.faq-a.open { max-height:300px; padding:0 16px 14px; border-top:1px solid rgba(255,255,255,0.04); }
+       82 +.faq-chevron { transition:transform 0.25s; flex-shrink:0; font-size:12px; color:#475569; }
+       83 +.faq-chevron.open { transform:rotate(180deg); }
+       84 +
+       85 +/* Animations */
+       86 +@keyframes fade-up { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+       87 +.fade-up { animation:fade-up 0.5s ease forwards; }
+       88 +.delay-1 { animation-delay:0.1s; opacity:0; }
+       89 +.delay-2 { animation-delay:0.2s; opacity:0; }
+       90 +.delay-3 { animation-delay:0.3s; opacity:0; }
+       91 +.delay-4 { animation-delay:0.4s; opacity:0; }
+       92 +
+       93 +/* Layout helpers */
+       94 +main { padding-top:64px; }
+       95 +.container { max-width:1280px; margin:0 auto; padding:0 24px; }
+       96 +.section { padding:80px 0; }
+       97 +.page-header { padding:40px 0 32px; }
+       98 +.page-label { font-size:12px; font-weight:500; color:#818cf8; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px; }
+       99 +.page-title { font-size:28px; font-weight:700; color:white; }
+      100 +.page-sub { font-size:14px; color:#64748b; margin-top:4px; }
+      101 +
+      102 +/* Grid utilities */
+      103 +.grid-2 { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+      104 +.grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+      105 +.grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+      106 +@media(max-width:900px) { .grid-4{grid-template-columns:repeat(2,1fr)} .grid-3{grid-template-columns:repeat(2,1fr)} .nav-links{display:none} }
+      107 +@media(max-width:600px) { .grid-2,.grid-3,.grid-4{grid-template-columns:1fr} }
+
+● Now the shared navbar snippet I'll reuse — writing index.html:
+
+● Write(experiment-website\index.html)
+  ⎿  Wrote 60 lines to experiment-website\index.html
+       2 <html lang="en">
+       3 <head>
+       4 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+       5 <title>ExperimentOS — Participant Portal</title>
+       6 <link rel="stylesheet" href="style.css">
+       7 <style>
+       8 .hero { min-height:calc(100vh - 64px); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px 24px; position:relative; }
+       9 .hero-badge { display:inline-flex; align-items:center; gap:8px; padding:6px 16px; border-radius:999px; border:1px solid rgba(99,102,241,0.3); background:rgba(99,102,241,0.1); color:#a5b4fc; fon
+         t-size:13px; font-weight:500; margin-bottom:32px; }
+      10 .hero h1 { font-size:clamp(36px,6vw,72px); font-weight:800; color:white; line-height:1.1; margin-bottom:20px; }
+     … +53 lines (ctrl+o to expand)
+
+● Update(experiment-website\index.html)
+  ⎿  Error editing file
+
+  Read 1 file (ctrl+o to expand)
+
+● Update(experiment-website\index.html)
+  ⎿  Added 38 lines
+      58    </div>
+      59    <div class="scroll-hint"><div class="scroll-dot"></div></div>
+      60  </section>
+      61 +
+      62 +<!-- Workflow -->
+      63 +<section class="section" style="border-top:1px solid rgba(255,255,255,0.04)">
+      64 +  <div class="container">
+      65 +    <div style="text-align:center;margin-bottom:56px">
+      66 +      <div class="page-label">How it works</div>
+      67 +      <h2 style="font-size:32px;font-weight:700;color:white">Four steps to completion</h2>
+      68 +    </div>
+      69 +    <div class="workflow">
+      70 +      <div class="workflow-step"><div class="workflow-icon" style="background:linear-gradient(135deg,#6366f1,#a855f7)">📖<span class="workflow-num">1</span></div><div><strong style="color:whit
+         +e;display:block;margin-bottom:4px">Learn</strong><span style="font-size:12px;color:#475569">Complete training modules</span></div></div>
+      71 +      <div class="workflow-step"><div class="workflow-icon" style="background:linear-gradient(135deg,#a855f7,#ec4899)">📋<span class="workflow-num">2</span></div><div><strong style="color:whit
+         +e;display:block;margin-bottom:4px">Prepare</strong><span style="font-size:12px;color:#475569">Review your assignment</span></div></div>
+      72 +      <div class="workflow-step"><div class="workflow-icon" style="background:linear-gradient(135deg,#22d3ee,#3b82f6)">🧭<span class="workflow-num">3</span></div><div><strong style="color:whit
+         +e;display:block;margin-bottom:4px">Collect</strong><span style="font-size:12px;color:#475569">Follow trip protocol</span></div></div>
+      73 +      <div class="workflow-step"><div class="workflow-icon" style="background:linear-gradient(135deg,#10b981,#22d3ee)">⬆<span class="workflow-num">4</span></div><div><strong style="color:white
+         +;display:block;margin-bottom:4px">Upload</strong><span style="font-size:12px;color:#475569">Submit your files</span></div></div>
+      74 +    </div>
+      75 +  </div>
+      76 +</section>
+      77 +
+      78 +<!-- Features -->
+      79 +<section class="section" style="border-top:1px solid rgba(255,255,255,0.04)">
+      80 +  <div class="container">
+      81 +    <div style="text-align:center;margin-bottom:48px"><div class="page-label" style="color:#22d3ee">Everything you need</div><h2 style="font-size:32px;font-weight:700;color:white">Built for pa
+         +rticipants, not engineers</h2></div>
+      82 +    <div class="grid-3">
+      83 +      <div class="card" style="padding:24px"><div style="font-size:24px;margin-bottom:12px">📖</div><h3 style="color:white;font-size:15px;margin-bottom:6px">Guided Training</h3><p style="font-
+         +size:13px;color:#64748b;line-height:1.6">Step-by-step interactive modules covering every part of the experiment.</p></div>
+      84 +      <div class="card card-cyan" style="padding:24px"><div style="font-size:24px;margin-bottom:12px">🗺️</div><h3 style="color:white;font-size:15px;margin-bottom:6px">Route Assignments</h3><p
+         +style="font-size:13px;color:#64748b;line-height:1.6">Clear group and route info so you always know where you need to be.</p></div>
+      85 +      <div class="card" style="padding:24px"><div style="font-size:24px;margin-bottom:12px">🕐</div><h3 style="color:white;font-size:15px;margin-bottom:6px">Timeslot Scheduling</h3><p style="f
+         +ont-size:13px;color:#64748b;line-height:1.6">Visual schedule with your assigned timeslot highlighted.</p></div>
+      86 +      <div class="card card-emerald" style="padding:24px"><div style="font-size:24px;margin-bottom:12px">⬆</div><h3 style="color:white;font-size:15px;margin-bottom:6px">Easy File Upload</h3><p
+         + style="font-size:13px;color:#64748b;line-height:1.6">Drag-and-drop submission with naming guidance and instant confirmation.</p></div>
+      87 +      <div class="card" style="padding:24px"><div style="font-size:24px;margin-bottom:12px">🛡️</div><h3 style="color:white;font-size:15px;margin-bottom:6px">Safety First</h3><p style="font-siz
+         +e:13px;color:#64748b;line-height:1.6">Built-in safety reminders and emergency contacts always within reach.</p></div>
+      88 +      <div class="card card-cyan" style="padding:24px"><div style="font-size:24px;margin-bottom:12px">✅</div><h3 style="color:white;font-size:15px;margin-bottom:6px">Progress Tracking</h3><p
+         +style="font-size:13px;color:#64748b;line-height:1.6">See training completion and submission status at a glance.</p></div>
+      89 +    </div>
+      90 +  </div>
+      91 +</section>
+      92 +
+      93 +<!-- Stats + CTA -->
+      94 +<section style="padding:48px 0;border-top:1px solid rgba(255,255,255,0.04)"><div class="container"><div class="grid-4"><div class="stat-card"><div class="stat-value" style="color:#818cf8">10</
+         +div><div class="stat-label">Training Modules</div></div><div class="stat-card"><div class="stat-value" style="color:#22d3ee">12</div><div class="stat-label">Trip Steps</div></div><div class="s
+         +tat-card"><div class="stat-value" style="color:#a855f7">3</div><div class="stat-label">Route Groups</div></div><div class="stat-card"><div class="stat-value" style="color:#10b981">5</div><div
+         +class="stat-label">Timeslots</div></div></div></div></section>
+      95 +<section style="padding:80px 0;border-top:1px solid rgba(255,255,255,0.04);text-align:center"><div class="container"><div style="font-size:40px;margin-bottom:16px">👥</div><h2 style="font-size
+         +:28px;font-weight:700;color:white;margin-bottom:12px">Ready to begin?</h2><p style="color:#64748b;margin-bottom:28px;font-size:15px">Start with the training modules — they take about 45 minute
+         +s.</p><a href="training.html" class="btn-primary">Begin Training →</a></div></section>
+      96 +</main>
+      97 +</body>
+      98 +</html>
+
+● Now training.html:
+
+● Write(experiment-website\training.html)
+  ⎿  Wrote 74 lines to experiment-website\training.html
+       1 <!DOCTYPE html>
+       2 <html lang="en">
+       3 <head>
+       4 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+       5 <title>Training — ExperimentOS</title>
+       6 <link rel="stylesheet" href="style.css">
+       7 <style>
+       8 .training-layout { display:grid; grid-template-columns:280px 1fr; gap:32px; align-items:start; padding:40px 0 80px; }
+       9 .sidebar { position:sticky; top:80px; }
+      10 .sidebar-progress { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; margin-bottom:12px; }
+     … +72 lines (ctrl+o to expand)
+
+● Update(experiment-website\training.html)
+  ⎿  Error editing file
+
+  Read 1 file (ctrl+o to expand)
+
+● Update(experiment-website\training.html)
+  ⎿  Added 23 lines
+      72  <div class="container">
+      73    <div class="page-header"><div class="page-label">Training Portal</div><h1 class="page-title">Participant Training</h1><p class="page-sub">Complete all modules before your assigned timeslot.<
+          /p></div>
+      74    <div class="training-layout">
+      75 +
+      76 +    <!-- Sidebar -->
+      77 +    <aside class="sidebar">
+      78 +      <div class="sidebar-progress">
+      79 +        <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:13px;color:#cbd5e1;font-weight:500">Your Progress</span><span id="pct-label" style="fon
+         +t-size:13px;font-weight:700;color:#818cf8">20%</span></div>
+      80 +        <div class="progress-bar"><div class="progress-fill" id="sidebar-progress" style="width:20%"></div></div>
+      81 +        <p style="font-size:11px;color:#334155;margin-top:6px">2 of 10 modules complete</p>
+      82 +      </div>
+      83 +      <div id="module-list"></div>
+      84 +    </aside>
+      85 +
+      86 +    <!-- Content -->
+      87 +    <div class="content-panel">
+      88 +      <div id="module-display"></div>
+      89 +      <div class="nav-btns">
+      90 +        <button class="btn-ghost" onclick="prevModule()">← Previous</button>
+      91 +        <span id="mod-counter" style="font-size:12px;color:#334155">1 / 10</span>
+      92 +        <button class="btn-ghost" onclick="nextModule()">Next →</button>
+      93 +      </div>
+      94 +    </div>
+      95 +  </div>
+      96 +</div>
+      97 +</main>
+
+● Now append the JavaScript block:
+
+● Update(experiment-website\training.html)
+  ⎿  Error editing file
+
+  Read 1 file (ctrl+o to expand)
+
+● Update(experiment-website\training.html)
+  ⎿  Added 52 lines
+       95    </div>
+       96  </div>
+       97  </main>
+       98 +<script>
+       99 +const modules=[
+      100 +  {id:1,title:'Welcome & Introduction',icon:'📖',done:true,dur:'5 min'},
+      101 +  {id:2,title:'Group & Route Assignments',icon:'🗺️',done:true,dur:'8 min'},
+      102 +  {id:3,title:'User Protocol Rules',icon:'🛡️',done:false,dur:'10 min'},
+      103 +  {id:4,title:'Timeslots & Scheduling',icon:'🕐',done:false,dur:'6 min'},
+      104 +  {id:5,title:'Pre-Experiment Preparation',icon:'✅',done:false,dur:'12 min'},
+      105 +  {id:6,title:'During-Trip Steps',icon:'🧭',done:false,dur:'15 min'},
+      106 +  {id:7,title:'After-Trip Submission',icon:'⬆',done:false,dur:'10 min'},
+      107 +  {id:8,title:"Dos and Don'ts",icon:'⚠️',done:false,dur:'7 min'},
+      108 +  {id:9,title:'Safety Notes',icon:'🚨',done:false,dur:'5 min'},
+      109 +  {id:10,title:'Contact & Help',icon:'📞',done:false,dur:'3 min'},
+      110 +];
+      111 +let current=1;
+      112 +const tripSteps=[
+      113 +  {step:1,action:'Open Google Maps',detail:'Launch Google Maps on your phone before anything else.',screenshot:false,app:'Google Maps'},
+      114 +  {step:2,action:'Check Destination',detail:'Verify your assigned destination address matches your briefing sheet.',screenshot:false,app:'Google Maps'},
+      115 +  {step:3,action:'Screenshot Transit Estimate',detail:'Capture the transit time estimate shown in Maps before switching apps.',screenshot:true,app:'Google Maps'},
+      116 +  {step:4,action:'Open Uber App',detail:'Switch to Uber and enter the same destination address.',screenshot:false,app:'Uber'},
+      117 +  {step:5,action:'Screenshot Estimated Wait',detail:'Capture the estimated wait time shown before you tap Request.',screenshot:true,app:'Uber'},
+      118 +  {step:6,action:'Request the Ride',detail:'Tap "Request" to book. Do not cancel unless instructed.',screenshot:false,app:'Uber'},
+      119 +  {step:7,action:'Screenshot Driver Accepted',detail:'Capture the screen the moment a driver accepts your request.',screenshot:true,app:'Uber'},
+      120 +  {step:8,action:'Screenshot Driver Arrival',detail:'Capture the screen when the driver arrives at your pickup point.',screenshot:true,app:'Uber'},
+      121 +  {step:9,action:'Screenshot Ride Start ETA',detail:'Capture the ETA shown at the very start of the ride.',screenshot:true,app:'Uber'},
+      122 +  {step:10,action:'Screenshot Ride End',detail:'Capture the completion screen when the ride ends.',screenshot:true,app:'Uber'},
+      123 +  {step:11,action:'Screenshot Receipt',detail:'Capture the full receipt showing fare breakdown and trip details.',screenshot:true,app:'Uber'},
+      124 +  {step:12,action:'Stop Screen Recording',detail:'End your screen recording session and verify the file saved correctly.',screenshot:false,app:'System'},
+      125 +];
+      126 +const content={
+      127 +  1:`<p style="color:#94a3b8;line-height:1.7;font-size:14px;margin-bottom:20px">Welcome to the <strong style="color:white">ExperimentOS Participant Portal</strong>. This training will prepare
+          + you for your assigned experiment session.</p><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px"><div style="padding:16px;border-radius:10px;border:1px
+          +solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);text-align:center"><div style="font-size:20px;font-weight:700;color:#818cf8;margin-bottom:4px">~45 min</div><div style="font-siz
+          +e:11px;color:#475569">Estimated time</div></div><div style="padding:16px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);text-align:center"><div s
+          +tyle="font-size:20px;font-weight:700;color:#22d3ee;margin-bottom:4px">10</div><div style="font-size:11px;color:#475569">Modules</div></div><div style="padding:16px;border-radius:10px;border:1
+          +px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);text-align:center"><div style="font-size:20px;font-weight:700;color:#10b981;margin-bottom:4px">✓</div><div style="font-size:1
+          +1px;color:#475569">Certificate on completion</div></div></div><div class="info-box info-indigo"><strong>Important:</strong> You must complete all modules before your assigned timeslot.</div>`
+          +,
+      128 +  2:`<p style="color:#94a3b8;line-height:1.7;font-size:14px;margin-bottom:20px">Participants are divided into groups, each assigned a specific route and timeslot. Your assignment is fixed.</p
+          +><div class="info-box info-cyan" style="margin-bottom:20px"><strong>Your Assignment</strong><br><br><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px"><div><div s
+          +tyle="font-size:11px;color:#164e63;margin-bottom:2px">Group</div><div style="font-size:14px;font-weight:600;color:white">Group A</div></div><div><div style="font-size:11px;color:#164e63;margi
+          +n-bottom:2px">Route</div><div style="font-size:14px;font-weight:600;color:white">Route 3 — City Centre Loop</div></div><div><div style="font-size:11px;color:#164e63;margin-bottom:2px">User Ty
+          +pe</div><div style="font-size:14px;font-weight:600;color:white">Standard User</div></div><div><div style="font-size:11px;color:#164e63;margin-bottom:2px">Timeslot</div><div style="font-size:1
+          +4px;font-weight:600;color:white">Slot 2 — 10:00 AM–12:00 PM</div></div></div></div><div class="rule-item">🗺️ Group A — Routes 1 &amp; 3, Morning slots</div><div class="rule-item">🗺️ Group B —
+          +Route 2, Afternoon slots</div><div class="rule-item">🗺️ Group C — Route 3, Evening slots</div>`,
+      129 +  3:`<p style="color:#94a3b8;line-height:1.7;font-size:14px;margin-bottom:20px">These rules are mandatory. Violations may result in your session data being excluded.</p>${['Use only the Uber
+          +app for ride-hailing — no alternatives.','Do not share your participant ID with others.','Follow the exact screenshot sequence — no skipping steps.','Do not alter or edit screenshots before u
+          +ploading.','Complete your session within your assigned timeslot.','Report any deviations immediately to the research team.','Keep your phone charged above 20% throughout the session.'].map((r
+          +,i)=>'<div class="rule-item"><div class="rule-num">'+(i+1)+'</div>'+r+'</div>').join('')}`,
+      130 +  4:`<p style="color:#94a3b8;line-height:1.7;font-size:14px;margin-bottom:20px">Each timeslot is 2 hours long. Arrive 10 minutes early.</p>${[{s:'Slot 1',t:'08:00 – 10:00 AM',g:'Group A',mine
+          +:false},{s:'Slot 2',t:'10:00 AM – 12:00 PM',g:'Group A',mine:true},{s:'Slot 3',t:'12:00 – 02:00 PM',g:'Group B',mine:false},{s:'Slot 4',t:'02:00 – 04:00 PM',g:'Group B',mine:false},{s:'Slot 5
+          +',t:'04:00 – 06:00 PM',g:'Group C',mine:false}].map(s=>'<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:10px;border:1px solid '+(s.mi
+          +ne?'rgba(99,102,241,0.3)':'rgba(255,255,255,0.06)')+';background:'+(s.mine?'rgba(99,102,241,0.08)':'rgba(255,255,255,0.02)')+';margin-bottom:8px"><div><div style="font-size:13px;font-weight:6
+          +00;color:white">'+s.s+' — '+s.t+'</div><div style="font-size:11px;color:#475569">'+s.g+'</div></div>'+(s.mine?'<span style="font-size:11px;padding:3px 10px;border-radius:999px;background:rgba
+          +(99,102,241,0.2);border:1px solid rgba(99,102,241,0.3);color:#a5b4fc">Your slot</span>':'')+'</div>').join('')}`,
+      131 +  5:`<p style="color:#94a3b8;line-height:1.7;font-size:14px;margin-bottom:20px">Complete all preparation steps before your timeslot begins.</p><div style="background:rgba(99,102,241,0.06);bor
+          +der:1px solid rgba(99,102,241,0.2);border-radius:12px;padding:20px"><div style="font-size:14px;font-weight:600;color:white;margin-bottom:16px">Pre-Experiment Checklist</div>${['Charge phone t
+          +o at least 80%','Enable screen recording','Install & log in to Uber','Install & log in to Google Maps','Confirm your assigned route and destination','Review file naming rules','Bring your par
+          +ticipant ID card'].map((item,i)=>'<label class="checklist-row" id="pre-'+i+'"><input type="checkbox" onchange="toggleCheck(\'pre-'+i+'\')"><span>'+item+'</span></label>').join('')}</div><div
+          +class="info-box info-amber" style="margin-top:16px"><strong>Tip:</strong> Test your screen recording the day before.</div>`,
+      132 +  6:`<p style="color:#94a3b8;line-height:1.7;font-size:14px;margin-bottom:16px">Follow these steps in exact order. Start your screen recording <strong style="color:white">before Step 1</stron
+          +g>.</p><div class="info-box info-cyan" style="margin-bottom:16px">📷 This section requires <strong>8 screenshots</strong>. Mark each step as done as you go.</div><div id="trip-steps"></div>`,
+      133 +  7:`<p style="color:#94a3b8;line-height:1.7;font-size:14px;margin-bottom:20px">After your trip, complete these steps before the end of your timeslot.</p><div style="background:rgba(16,185,12
+          +9,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:12px;padding:20px;margin-bottom:16px"><div style="font-size:14px;font-weight:600;color:white;margin-bottom:16px">Post-Trip Submissi
+          +on Checklist</div>${['Stop screen recording and verify file saved','Count all screenshots (should match step list)','Rename files using the correct naming convention','Fill in the submission
+          +metadata form','Upload all files via the Upload page','Confirm submission success message','Email the research team if any steps were missed'].map((item,i)=>'<label class="checklist-row" id="
+          +post-'+i+'"><input type="checkbox" onchange="toggleCheck(\'post-'+i+'\')"><span>'+item+'</span></label>').join('')}</div><div class="info-box info-indigo">File naming: <code style="font-famil
+          +y:monospace;background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;color:#67e8f9">[Group]_[ParticipantID]_[StepNumber]_[YYYYMMDD]</code></div>`,
+      134 +  8:`<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px"><div style="padding:20px;border-radius:12px;border:1px solid rgba(16,185,129,0.2);background:rgba(16,185,129,0.05)"><div
+          +style="display:flex;align-items:center;gap:8px;margin-bottom:16px"><span>✅</span><span style="font-weight:600;color:#34d399">Do</span></div><ul style="list-style:none;padding:0">${['Start re
+          +cording before opening any app','Follow the exact step sequence','Upload files the same day','Use the correct file naming format','Report issues immediately'].map(d=>'<li style="display:flex;
+          +align-items:flex-start;gap:8px;font-size:13px;color:#cbd5e1;margin-bottom:10px"><span style="color:#10b981">✓</span>'+d+'</li>').join('')}</ul></div><div style="padding:20px;border-radius:12p
+          +x;border:1px solid rgba(239,68,68,0.2);background:rgba(239,68,68,0.05)"><div style="display:flex;align-items:center;gap:8px;margin-bottom:16px"><span>❌</span><span style="font-weight:600;col
+          +or:#f87171">Don\'t</span></div><ul style="list-style:none;padding:0">${['Use a ride-sharing app other than Uber','Edit or crop screenshots','Share your participant ID','Miss your timeslot wit
+          +hout notice','Upload files without renaming them'].map(d=>'<li style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:#cbd5e1;margin-bottom:10px"><span style="color:#ef4444">
+          +✗</span>'+d+'</li>').join('')}</ul></div></div>`,
+      135 +  9:`<div class="info-box info-red" style="margin-bottom:20px"><strong>🚨 Emergency</strong><br>If you feel unsafe at any point, exit the ride immediately and call emergency services.<br><br>
+          +<strong style="font-size:20px;font-family:monospace">999 / 112</strong></div>${['Do not share your personal address with the driver','Verify the driver name and plate before entering the vehi
+          +cle','Share your live location with a trusted contact','Sit in the back seat','Trust your instincts — exit if uncomfortable'].map(s=>'<div class="rule-item">🛡️ '+s+'</div>').join('')}`,
+      136 +  10:`<p style="color:#94a3b8;line-height:1.7;font-size:14px;margin-bottom:20px">Reach out to the research team if you have any questions or issues.</p>${[{name:'Dr. Sarah Lin',role:'Principa
+          +l Investigator',email:'sarah.lin@university.edu',phone:'+1 555-0101'},{name:'James Park',role:'Study Coordinator',email:'james.park@university.edu',phone:'+1 555-0102'},{name:'Tech Support',r
+          +ole:'Upload & App Issues',email:'techsupport@university.edu',phone:'+1 555-0199'}].map(c=>'<div style="padding:16px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:rgba(
+          +255,255,255,0.02);margin-bottom:10px"><div style="font-weight:600;color:white;margin-bottom:2px">'+c.name+'</div><div style="font-size:11px;color:#475569;margin-bottom:10px">'+c.role+'</div><
+          +a href="mailto:'+c.email+'" style="display:block;font-size:13px;color:#818cf8;text-decoration:none;margin-bottom:4px">'+c.email+'</a><div style="font-size:13px;color:#64748b">'+c.phone+'</div
+          +></div>').join('')}`,
+      137 +};
+      138 +function renderSidebar(){document.getElementById('module-list').innerHTML=modules.map(m=>'<button class="module-btn '+(m.id===current?'active':'')+'" onclick="goTo('+m.id+')"><div class="chec
+          +k '+(m.done?'done':'')+'">'+( m.done?'✓':'')+'</div><span style="flex:1">'+m.icon+' '+m.title+'</span><span class="dur">'+m.dur+'</span></button>').join('');}
+      139 +function renderContent(){const m=modules[current-1];document.getElementById('module-display').innerHTML='<div class="module-header"><div class="module-icon">'+m.icon+'</div><div><div style="f
+          +ont-size:11px;color:#475569;margin-bottom:2px">Module '+current+' of 10</div><h2 style="font-size:20px;font-weight:700;color:white">'+m.title+'</h2></div></div><div>'+(content[current]||'')+'
+          +</div>';document.getElementById('mod-counter').textContent=current+' / 10';if(current===6)renderTripSteps();}
+      140 +function renderTripSteps(){const el=document.getElementById('trip-steps');if(!el)return;el.innerHTML=tripSteps.map(s=>'<div class="step-card" id="sc-'+s.step+'"><div class="step-num" id="sn-'
+          ++s.step+'">'+s.step+'</div><div style="flex:1"><div class="step-action" id="sa-'+s.step+'">'+s.action+'</div><div class="step-detail">'+s.detail+'</div><div class="step-tags">'+(s.screenshot?
+          +'<span class="tag tag-screenshot">📷 Screenshot</span>':'')+'<span class="tag tag-app">'+s.app+'</span></div></div><button class="mark-btn" id="mb-'+s.step+'" onclick="markStep('+s.step+')">M
+          +ark done</button></div>').join('');}
+      141 +function markStep(n){const btn=document.getElementById('mb-'+n);const isDone=btn.classList.contains('done');document.getElementById('sc-'+n).classList.toggle('done',!isDone);document.getEleme
+          +ntById('sn-'+n).classList.toggle('done',!isDone);document.getElementById('sa-'+n).classList.toggle('done',!isDone);btn.classList.toggle('done',!isDone);btn.textContent=isDone?'Mark done':'Don
+          +e ✓';}
+      142 +function toggleCheck(id){document.getElementById(id).classList.toggle('checked');}
+      143 +function goTo(id){current=id;renderSidebar();renderContent();window.scrollTo({top:0,behavior:'smooth'});}
+      144 +function nextModule(){if(current<10)goTo(current+1);}
+      145 +function prevModule(){if(current>1)goTo(current-1);}
+      146 +renderSidebar();renderContent();
+      147 +</script>
+      148 +</body>
+      149 +</html>
+
+● Write(experiment-website\dashboard.html)
+  ⎿  Wrote 141 lines to experiment-website\dashboard.html
+       1 <!DOCTYPE html>
+       2 <html lang="en">
+       3 <head>
+       4 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+       5 <title>Dashboard — ExperimentOS</title>
+       6 <link rel="stylesheet" href="style.css">
+       7 <style>
+       8 .assign-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
+       9 .assign-card { padding:16px; border-radius:12px; border:1px solid rgba(255,255,255,0.06); background:rgba(255,255,255,0.03); }
+      10 .assign-label { font-size:10px; font-weight:500; color:#475569; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px; display:flex; align-items:center; gap:5px; }
+     … +137 lines (ctrl+o to expand)
+
+● Write(experiment-website\resources.html)
+  ⎿  Wrote 123 lines to experiment-website\resources.html
+       2 <html lang="en">
+       3 <head>
+       4 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+       5 <title>Resources — ExperimentOS</title>
+       6 <link rel="stylesheet" href="style.css">
+       7 <style>
+       8 .resource-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+       9 .resource-card { padding:20px; border-radius:12px; border:1px solid rgba(255,255,255,0.06); background:rgba(255,255,255,0.03); transition:all 0.3s; display:flex; flex-direction:column; gap:12px
+         ; }
+      10 .resource-card:hover { border-color:rgba(99,102,241,0.25); box-shadow:0 0 24px rgba(99,102,241,0.1); transform:translateY(-2px); }
+     … +117 lines (ctrl+o to expand)
+
+● Write(experiment-website\upload.html)
+  ⎿  Wrote 193 lines to experiment-website\upload.html
+       2 <html lang="en">
+       3 <head>
+       4 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+       5 <title>Upload — ExperimentOS</title>
+       6 <link rel="stylesheet" href="style.css">
+       8 .upload-file-row { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.06); background:rgba(255,255,255,0.02); margin-bottom:8
+         px; }
+       9 .file-thumb { width:36px; height:36px; border-radius:8px; background:rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+      10 .remove-btn { width:24px; height:24px; border-radius:50%; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2); color:#f87171; font-size:12px; cursor:pointer; display:flex; alig
+         n-items:center; justify-content:center; flex-shrink:0; transition:all 0.2s; }
+     … +193 lines (ctrl+o to expand)
+
+● Write(experiment-website\schedule.html)
+  ⎿  Wrote 180 lines to experiment-website\schedule.html
+       1 <!DOCTYPE html>
+       2 <html lang="en">
+       3 <head>
+       4 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+       5 <title>Schedule — ExperimentOS</title>
+       6 <link rel="stylesheet" href="style.css">
+       7 <style>
+       8 .timeline { position:relative; padding-left:48px; }
+       9 .timeline::before { content:''; position:absolute; left:16px; top:0; bottom:0; width:1px; background:linear-gradient(to bottom,rgba(99,102,241,0.3),rgba(255,255,255,0.04)); }
+      10 .tl-item { position:relative; margin-bottom:16px; }
+     … +174 lines (ctrl+o to expand)
+
+● Write(experiment-website\help.html)
+  ⎿  Wrote 151 lines to experiment-website\help.html
+       1 <!DOCTYPE html>
+       2 <html lang="en">
+       3 <head>
+       4 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+       5 <title>Help — ExperimentOS</title>
+       6 <link rel="stylesheet" href="style.css">
+       7 <style>
+       8 .help-grid { display:grid; grid-template-columns:1fr 360px; gap:32px; }
+       9 .emergency-box { padding:20px 24px; border-radius:14px; border:1px solid rgba(239,68,68,0.3); background:rgba(239,68,68,0.07); margin-bottom:28px; }
+      10 .contact-card { padding:20px; border-radius:12px; border:1px solid rgba(255,255,255,0.06); background:rgba(255,255,255,0.03); margin-bottom:12px; transition:all 0.2s; }
+     … +153 lines (ctrl+o to expand)
+
+  Listed 1 directory (ctrl+o to expand)
+
+● Bash(explorer "C:\Users\25019142r\experiment-website")
+  ⎿  Error: Exit code 1
+
+● The files are saved here:
+
+  C:\Users\25019142r\experiment-website\
+
+  8 files total:
+  index.html       ← Home / Landing page
+  training.html    ← Training modules (interactive)
+  dashboard.html   ← Participant dashboard
+  resources.html   ← Resource library
+  upload.html      ← File upload & submission
+  schedule.html    ← Timeslot schedule
+  help.html        ← Help & contacts
+  style.css        ← Shared styles
+
+  To open it — just double-click index.html in File Explorer. No installation, no server needed. Every page links to the others via the navbar.

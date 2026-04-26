@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Email Signup — RCT Research</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="bg-scene" aria-hidden="true">
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <div class="bg-orb bg-orb-3"></div>
+  <div class="bg-grid"></div>
+</div>
+
+<div class="page">
+  <div class="container-sm" style="display:grid;place-items:center;min-height:100vh;padding-top:40px;padding-bottom:40px;">
+    <div class="card" style="width:100%;max-width:540px;">
+      <div class="text-center mb-24">
+        <h2 style="letter-spacing:-.01em;">Email Registration</h2>
+        <p class="text-muted text-sm mt-8">Register with your email, then enter the verification code to activate your account automatically.</p>
+      </div>
+
+      <div id="error-msg" class="alert alert-error mb-16" style="display:none;padding:10px 14px;font-size:13px;"></div>
+      <div id="success-msg" class="alert alert-success mb-16" style="display:none;padding:10px 14px;font-size:13px;"></div>
+      <div id="code-hint" class="alert alert-info mb-16" style="display:none;padding:10px 14px;font-size:13px;"></div>
+
+      <form id="register-form">
+        <div class="form-row mb-16">
+          <div class="form-group">
+            <label class="form-label" for="email">Email</label>
+            <input class="form-input" id="email" type="email" placeholder="you@example.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="participant-code">Participant ID</label>
+            <input class="form-input" id="participant-code" type="text" placeholder="e.g. P-2024-120" required>
+          </div>
+        </div>
+
+        <div class="form-group mb-16">
+          <label class="form-label" for="participant-name">Name (optional)</label>
+          <input class="form-input" id="participant-name" type="text" placeholder="Your display name">
+        </div>
+
+        <div class="form-row mb-20">
+          <div class="form-group">
+            <label class="form-label" for="password">Password</label>
+            <input class="form-input" id="password" type="password" placeholder="At least 8 characters" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="confirm-password">Confirm Password</label>
+            <input class="form-input" id="confirm-password" type="password" placeholder="Re-enter password" required>
+          </div>
+        </div>
+
+        <button class="btn btn-primary w-full btn-lg" id="register-btn" type="submit">
+          Send Verification Code
+        </button>
+      </form>
+
+      <form id="verify-form" style="display:none;">
+        <div class="form-group mb-20">
+          <label class="form-label" for="verification-code">Verification Code</label>
+          <input class="form-input" id="verification-code" type="text" placeholder="Enter 6-digit code" maxlength="6" required>
+        </div>
+
+        <div class="flex gap-10">
+          <button class="btn btn-secondary w-full btn-lg" id="back-btn" type="button">Back</button>
+          <button class="btn btn-primary w-full btn-lg" id="verify-btn" type="submit">Verify & Activate</button>
+        </div>
+      </form>
+
+      <div class="text-center mt-20" style="display:flex;flex-direction:column;gap:8px;">
+        <a href="login.html" class="text-xs" style="color:var(--indigo-l);">Already have an account? Back to login →</a>
+        <a href="help.html" class="text-xs" style="color:var(--indigo-l);">Need help? Contact the research team →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var pendingEmail = '';
+
+function showBox(id, message) {
+  var ids = ['error-msg', 'success-msg', 'code-hint'];
+  ids.forEach(function(boxId) {
+    document.getElementById(boxId).style.display = boxId === id && message ? '' : 'none';
+    if (boxId === id) document.getElementById(boxId).textContent = message || '';
+  });
+}
+
+function setBusy(buttonId, isBusy, busyText, idleText) {
+  var btn = document.getElementById(buttonId);
+  btn.disabled = isBusy;
+  btn.textContent = isBusy ? busyText : idleText;
+}
+
+function resetVerifyStep() {
+  document.getElementById('verify-form').style.display = 'none';
+  document.getElementById('register-form').style.display = '';
+  document.getElementById('verification-code').value = '';
+}
+
+document.getElementById('back-btn').addEventListener('click', function () {
+  resetVerifyStep();
+  showBox('error-msg', '');
+  showBox('success-msg', '');
+  showBox('code-hint', '');
+});
+
+document.getElementById('register-form').addEventListener('submit', function (e) {
+  e.preventDefault();
+
+  var email = document.getElementById('email').value.trim();
+  var participantCode = document.getElementById('participant-code').value.trim();
+  var participantName = document.getElementById('participant-name').value.trim();
+  var password = document.getElementById('password').value;
+  var confirmPassword = document.getElementById('confirm-password').value;
+
+  if (!email || !participantCode || !password) {
+    return showBox('error-msg', 'Email, participant ID, and password are required.');
+  }
+
+  if (password.length < 8) {
+    return showBox('error-msg', 'Password must be at least 8 characters.');
+  }
+
+  if (password !== confirmPassword) {
+    return showBox('error-msg', 'Passwords do not match.');
+  }
+
+  setBusy('register-btn', true, 'Sending…', 'Send Verification Code');
+  showBox('error-msg', '');
+  showBox('success-msg', '');
+  showBox('code-hint', '');
+
+  fetch('/api/participant/register-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: email,
+      participant_code: participantCode,
+      name: participantName || null,
+      password: password
+    })
+  })
+    .then(function (r) {
+      return r.json().catch(function(){ return {}; }).then(function(d) {
+        if (!r.ok) throw new Error(d.error || 'Failed to send verification code.');
+        return d;
+      });
+    })
+    .then(function (data) {
+      pendingEmail = email;
+      document.getElementById('register-form').style.display = 'none';
+      document.getElementById('verify-form').style.display = '';
+      showBox('success-msg', 'Verification code sent. Enter it below to activate your account.');
+      if (data.verification_code) {
+        showBox('code-hint', 'Development mode code: ' + data.verification_code);
+      }
+    })
+    .catch(function (err) {
+      showBox('error-msg', err.message || 'Failed to send verification code.');
+    })
+    .finally(function () {
+      setBusy('register-btn', false, 'Sending…', 'Send Verification Code');
+    });
+});
+
+document.getElementById('verify-form').addEventListener('submit', function (e) {
+  e.preventDefault();
+
+  var code = document.getElementById('verification-code').value.trim();
+  if (!pendingEmail || !code) {
+    return showBox('error-msg', 'Email and verification code are required.');
+  }
+
+  setBusy('verify-btn', true, 'Verifying…', 'Verify & Activate');
+  showBox('error-msg', '');
+
+  fetch('/api/participant/verify-email-code', {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: pendingEmail, code: code })
+  })
+    .then(function (r) {
+      return r.json().catch(function(){ return {}; }).then(function(d) {
+        if (!r.ok) throw new Error(d.error || 'Verification failed.');
+        return d;
+      });
+    })
+    .then(function (data) {
+      window.location.assign(data.redirect || '/dashboard.html');
+    })
+    .catch(function (err) {
+      showBox('error-msg', err.message || 'Verification failed.');
+    })
+    .finally(function () {
+      setBusy('verify-btn', false, 'Verifying…', 'Verify & Activate');
+    });
+});
+</script>
+
+</body>
+</html>

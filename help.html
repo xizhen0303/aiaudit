@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Help — BarryXI Research</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="bg-scene" aria-hidden="true">
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <div class="bg-orb bg-orb-3"></div>
+  <div class="bg-grid"></div>
+</div>
+
+<div id="navbar-placeholder"></div>
+
+<div class="page">
+  <div class="container" style="padding-top:40px;padding-bottom:60px;">
+
+    <div class="section-header fade-up">
+      <div class="badge badge-rose">Help &amp; Support</div>
+      <h2>Help Centre</h2>
+      <p>Find answers, troubleshoot issues, or contact the research team.</p>
+    </div>
+
+    <!-- Emergency banner -->
+    <div class="alert alert-error mb-32 fade-up delay-1" style="border-radius:var(--r-lg);">
+      <span class="alert-icon" style="font-size:20px;">🚨</span>
+      <div>
+        <strong style="font-size:14px;">Emergency Numbers</strong>
+        <div class="text-sm mt-4" style="opacity:.9;">
+          Hong Kong: <strong>999</strong> &nbsp;·&nbsp; International: <strong>112</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-2 gap-24">
+
+      <!-- ── LEFT: FAQ + Issues ── -->
+      <div class="flex flex-col gap-24">
+
+        <!-- FAQ -->
+        <div class="card fade-up delay-2">
+          <h3 class="mb-20">Frequently Asked Questions</h3>
+          <div class="flex flex-col gap-8" id="faq-list"></div>
+        </div>
+
+        <!-- Common Issues -->
+        <div class="card fade-up delay-3">
+          <h3 class="mb-20">⚠️ Common Issues</h3>
+          <div class="flex flex-col gap-10">
+            <div class="card-flat">
+              <h4 style="color:var(--amber);margin-bottom:6px;">Upload failing</h4>
+              <p class="text-sm text-muted">Check your internet connection. Files must be under 500 MB each. Accepted formats: PNG, JPG, MP4. Rename the file using the correct format and retry.</p>
+            </div>
+            <div class="card-flat">
+              <h4 style="color:var(--amber);margin-bottom:6px;">App crashed mid-trip</h4>
+              <p class="text-sm text-muted">Do not restart Uber. Check if the trip is still active in your ride history. Take manual screenshots of the relevant screens and note the crash time in your upload notes.</p>
+            </div>
+            <div class="card-flat">
+              <h4 style="color:var(--amber);margin-bottom:6px;">Wrong file uploaded</h4>
+              <p class="text-sm text-muted">Contact the research team immediately with your reference number. Do not re-submit without confirmation from Mr. Barry XI.</p>
+            </div>
+            <div class="card-flat">
+              <h4 style="color:var(--amber);margin-bottom:6px;">Missed a screenshot step</h4>
+              <p class="text-sm text-muted">Complete all remaining steps and note which step was missed in the upload notes field. Partial submissions are accepted — do not discard other screenshots.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Incident reporting -->
+        <div class="alert alert-warn fade-up delay-4" style="flex-direction:column;gap:10px;border-radius:var(--r-lg);">
+          <div style="font-weight:600;font-size:14px;">📋 Reporting an Incident</div>
+          <p class="text-sm" style="opacity:.9;">If you experienced any unexpected events during your trip (confrontation, safety concern, app failure, or data loss), report it to the research team within 24 hours. Include your participant ID and reference number.</p>
+          <a href="mailto:zhen.xi@connect.polyu.hk?subject=Incident Report — BarryXI Research" class="btn btn-ghost btn-sm" style="align-self:flex-start;">
+            📧 Email Incident Report
+          </a>
+        </div>
+
+      </div>
+
+      <!-- ── RIGHT: Contacts ── -->
+      <div class="flex flex-col gap-16 fade-up delay-3">
+
+        <!-- Primary contact -->
+        <div class="contact-card card-glow" style="border-color:rgba(99,102,241,.3);background:linear-gradient(135deg,rgba(99,102,241,.07),var(--surface));">
+          <div class="flex items-center gap-16 mb-20">
+            <div class="contact-avatar" style="width:60px;height:60px;font-size:18px;">BX</div>
+            <div>
+              <h3>Mr. Barry XI</h3>
+              <p class="text-sm text-muted">Principal Investigator</p>
+              <span class="badge badge-indigo mt-4">Primary Contact</span>
+            </div>
+          </div>
+          <div class="contact-row">
+            <span style="flex-shrink:0;">✉️</span>
+            <a href="mailto:zhen.xi@connect.polyu.hk" style="color:var(--indigo-l);word-break:break-all;">
+              zhen.xi@connect.polyu.hk
+            </a>
+          </div>
+          <div class="contact-row">
+            <span style="flex-shrink:0;">🏛️</span>
+            <span>The Hong Kong Polytechnic University</span>
+          </div>
+          <div class="contact-row">
+            <span style="flex-shrink:0;">🕐</span>
+            <span>Mon–Fri, 9:00 AM – 6:00 PM (HKT)</span>
+          </div>
+          <div class="contact-row">
+            <span style="flex-shrink:0;">📋</span>
+            <span>AI Auditing · Ride Data Research · RCT Study</span>
+          </div>
+          <a href="mailto:zhen.xi@connect.polyu.hk" class="btn btn-primary w-full mt-16">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            Send Email
+          </a>
+        </div>
+
+        <!-- Quick links -->
+        <div class="card fade-up delay-4">
+          <h4 class="mb-16">Quick Links</h4>
+          <div class="flex flex-col gap-8">
+            <a href="training.html" class="card-flat flex items-center gap-12" style="transition:border-color .15s;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor=''">
+              <span style="font-size:18px;">🎓</span>
+              <div><div class="text-sm" style="font-weight:500;">Training Modules</div><div class="text-xs text-dim">10 modules · Visual guides</div></div>
+              <svg style="margin-left:auto;color:var(--text-dim)" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </a>
+            <a href="resources.html" class="card-flat flex items-center gap-12" style="transition:border-color .15s;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor=''">
+              <span style="font-size:18px;">📂</span>
+              <div><div class="text-sm" style="font-weight:500;">Resource Library</div><div class="text-xs text-dim">Handbooks, guides, templates</div></div>
+              <svg style="margin-left:auto;color:var(--text-dim)" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </a>
+            <a href="upload.html" class="card-flat flex items-center gap-12" style="transition:border-color .15s;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor=''">
+              <span style="font-size:18px;">☁️</span>
+              <div><div class="text-sm" style="font-weight:500;">File Upload</div><div class="text-xs text-dim">Submit evidence package</div></div>
+              <svg style="margin-left:auto;color:var(--text-dim)" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </a>
+            <a href="community.html" class="card-flat flex items-center gap-12" style="transition:border-color .15s;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor=''">
+              <span style="font-size:18px;">💬</span>
+              <div><div class="text-sm" style="font-weight:500;">Community Board</div><div class="text-xs text-dim">Discuss issues with peers</div></div>
+              <svg style="margin-left:auto;color:var(--text-dim)" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="components/navbar.js"></script>
+<script>
+var faqs = [
+  {q:'Can I cancel a ride if I feel unsafe?', a:'Yes, always prioritise your safety. Cancel immediately, move to a safe location, and contact emergency services if needed. Notify Mr. Barry XI as soon as it is safe to do so.'},
+  {q:'What file formats are accepted for upload?', a:'Screenshots: PNG or JPG only. Screen recordings: MP4 only. Files in other formats will be rejected by the upload system.'},
+  {q:'What if I miss a screenshot step?', a:'Complete the remaining steps as normal. In the upload notes field, clearly state which step was missed and why. Partial submissions are still valuable — do not discard your other evidence.'},
+  {q:'Does the app work on all smartphones?', a:'The study supports iOS, Android, and HarmonyOS devices. The Uber app and Google Maps must both be installed and updated to the latest version before your trip.'},
+  {q:'What should I do if Uber crashes mid-trip?', a:'Do not force-close the app. Wait 10 seconds and check if it restarts automatically. Take manual screenshots from your camera and note the crash at the exact time. Log the incident in your upload notes.'},
+  {q:'How do I name my files correctly?', a:'Use the format: [Group]_[ParticipantID]_[StepNumber]_[YYYYMMDD].[ext]. Example: A_P042_Step03_20240315.png. Incorrect naming causes submission errors.'},
+  {q:'How long do I have to upload after my trip?', a:'You must upload within 24 hours of completing your trip. Late submissions may not be accepted for the current study cycle.'},
+  {q:'Is my personal data included in the screenshots?', a:'No — do not include any personally identifiable information. Blur or crop your profile photo in the Uber app if it appears. The research team only needs the fare, route, and timing data.'}
+];
+
+var el = document.getElementById('faq-list');
+el.innerHTML = faqs.map(function(f,i){
+  return '<div class="faq-item" id="faq-' + i + '">' +
+    '<div class="faq-q" onclick="toggleFaq(' + i + ')">' +
+      '<span>' + f.q + '</span>' +
+      '<svg class="faq-chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>' +
+    '</div>' +
+    '<div class="faq-a"><div class="faq-a-inner">' + f.a + '</div></div>' +
+  '</div>';
+}).join('');
+
+function toggleFaq(i) {
+  var item = document.getElementById('faq-' + i);
+  var isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(function(el){ el.classList.remove('open'); });
+  if (!isOpen) item.classList.add('open');
+}
+</script>
+</body>
+</html>
